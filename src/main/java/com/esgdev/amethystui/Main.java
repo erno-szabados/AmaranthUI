@@ -1,5 +1,6 @@
 package com.esgdev.amethystui;
 
+import com.esgdev.amethystui.engine.ModelClient;
 import com.esgdev.amethystui.ui.MainFrame;
 
 import javax.swing.*;
@@ -13,6 +14,8 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            ModelClient client = new ModelClient();
 
             // Create and show the main frame
             MainFrame frame = new MainFrame();
