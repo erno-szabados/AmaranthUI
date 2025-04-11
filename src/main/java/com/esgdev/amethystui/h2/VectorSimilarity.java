@@ -2,7 +2,7 @@ package com.esgdev.amethystui.h2;
 
 public class VectorSimilarity {
 
-    public static double cosineSimilarity(float[] vectorA, float[] vectorB) {
+    public static double cosineSimilarity(double[] vectorA, double[] vectorB) {
         double dotProduct = 0.0;
         double normA = 0.0;
         double normB = 0.0;
@@ -14,7 +14,7 @@ public class VectorSimilarity {
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
-    public static double euclideanDistance(float[] vectorA, float[] vectorB) {
+    public static double euclideanDistance(double[] vectorA, double[] vectorB) {
         double sum = 0.0;
         for (int i = 0; i < vectorA.length; i++) {
             sum += Math.pow(vectorA[i] - vectorB[i], 2);

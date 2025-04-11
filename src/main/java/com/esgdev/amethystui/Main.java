@@ -7,19 +7,19 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                // Set the system Look and Feel
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            ModelClient client = new ModelClient();
-
-            // Create and show the main frame
-            MainFrame frame = new MainFrame();
-            frame.setVisible(true);
-        });
+        ModelClient client = new ModelClient();
+//        SwingUtilities.invokeLater(() -> {
+////            try {
+////                // Set the system Look and Feel
+////                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+////            } catch (Exception e) {
+////                e.printStackTrace();
+////            }
+//
+//            // Create and show the main frame
+//            //MainFrame frame = new MainFrame();
+//            //frame.setVisible(true);
+//        });
     }
 }

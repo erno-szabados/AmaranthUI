@@ -30,9 +30,26 @@ public class DependencyFactory {
             // Register vector similarity functions
             registerVectorFunctions(dbConnection);
 
-            // Create a table for vector storage
+//          TODO: for later
+//            The current table design with separate `texts` and `embeddings` tables provides flexibility for adding metadata in the future. For example:
+//
+//            - **`texts` table**: You can add columns like `created_at`, `updated_at`, or `source` to store metadata about the text.
+//            - **`embeddings` table**: You can add columns like `last_accessed`, `chunk_index`, or `usage_count` to track metadata for individual embedding chunks.
+//
+//            This design ensures scalability and adaptability for future requirements without significant schema changes.
             try (Statement statement = dbConnection.createStatement()) {
-                statement.execute("CREATE TABLE vectors (id INT PRIMARY KEY, vector VARCHAR)");
+                statement.execute("""
+                            CREATE TABLE texts (
+                                id INT PRIMARY KEY AUTO_INCREMENT,
+                                text VARCHAR NOT NULL
+                            );
+                            CREATE TABLE embeddings (
+                                id INT PRIMARY KEY AUTO_INCREMENT,
+                                text_id INT NOT NULL,
+                                embedding ARRAY(DOUBLE PRECISION),
+                                FOREIGN KEY (text_id) REFERENCES texts(id)
+                            );
+                        """);
             }
 
             // Initialize OllamaAPI
@@ -58,14 +75,14 @@ public class DependencyFactory {
         }
     }
 
-   private static void registerVectorFunctions(Connection connection) throws SQLException {
-       try (Statement statement = connection.createStatement()) {
-           statement.execute("CREATE ALIAS IF NOT EXISTS COSINESIMILARITY FOR \"" + VectorSimilarity.class.getName() + ".cosineSimilarity\"");
-           statement.execute("CREATE ALIAS IF NOT EXISTS EUCLIDEANDISTANCE FOR \"" + VectorSimilarity.class.getName() + ".euclideanDistance\"");
-       } catch (SQLException e) {
-           throw new SQLException("Failed to register vector functions", e);
-       }
-   }
+    private static void registerVectorFunctions(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE ALIAS IF NOT EXISTS COSINESIMILARITY FOR \"" + VectorSimilarity.class.getName() + ".cosineSimilarity\"");
+            statement.execute("CREATE ALIAS IF NOT EXISTS EUCLIDEANDISTANCE FOR \"" + VectorSimilarity.class.getName() + ".euclideanDistance\"");
+        } catch (SQLException e) {
+            throw new SQLException("Failed to register vector functions", e);
+        }
+    }
 
     public static EmbeddingManager createEmbeddingManager() {
         return new EmbeddingManager(dbConnection, ollamaAPI, embeddingModel);
