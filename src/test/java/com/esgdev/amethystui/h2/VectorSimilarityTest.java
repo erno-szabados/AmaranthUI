@@ -7,8 +7,8 @@ public class VectorSimilarityTest {
 
     @Test
     public void testCosineSimilarity() {
-        float[] vectorA = {1.0f, 2.0f, 3.0f};
-        float[] vectorB = {4.0f, 5.0f, 6.0f};
+        double[] vectorA = {1.0f, 2.0f, 3.0f};
+        double[] vectorB = {4.0f, 5.0f, 6.0f};
 
         double result = VectorSimilarity.cosineSimilarity(vectorA, vectorB);
 
@@ -19,8 +19,8 @@ public class VectorSimilarityTest {
 
     @Test
     public void testCosineSimilarityWithZeroVector() {
-        float[] vectorA = {0.0f, 0.0f, 0.0f};
-        float[] vectorB = {1.0f, 2.0f, 3.0f};
+        double[] vectorA = {0.0f, 0.0f, 0.0f};
+        double[] vectorB = {1.0f, 2.0f, 3.0f};
 
         double result = VectorSimilarity.cosineSimilarity(vectorA, vectorB);
 
@@ -30,8 +30,8 @@ public class VectorSimilarityTest {
 
     @Test
     public void testEuclideanDistance() {
-        float[] vectorA = {1.0f, 2.0f, 3.0f};
-        float[] vectorB = {4.0f, 5.0f, 6.0f};
+        double[] vectorA = {1.0f, 2.0f, 3.0f};
+        double[] vectorB = {4.0f, 5.0f, 6.0f};
 
         double result = VectorSimilarity.euclideanDistance(vectorA, vectorB);
 
@@ -42,8 +42,8 @@ public class VectorSimilarityTest {
 
     @Test
     public void testEuclideanDistanceWithSameVectors() {
-        float[] vectorA = {1.0f, 2.0f, 3.0f};
-        float[] vectorB = {1.0f, 2.0f, 3.0f};
+        double[] vectorA = {1.0f, 2.0f, 3.0f};
+        double[] vectorB = {1.0f, 2.0f, 3.0f};
 
         double result = VectorSimilarity.euclideanDistance(vectorA, vectorB);
 
