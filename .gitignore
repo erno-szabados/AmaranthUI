@@ -36,3 +36,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/h2-2.3.232.jar

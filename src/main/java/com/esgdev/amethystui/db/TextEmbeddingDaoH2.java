@@ -47,7 +47,6 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to initialize database schema", e);
         }
-
     }
 
     private static void registerVectorFunctions(Connection connection) throws SQLException {
@@ -106,8 +105,8 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
             for (TextEmbedding embedding : embeddings) {
                 stmt.setString(1, embedding.getChunk());
                 stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
-                stmt.setDate(3, new java.sql.Date(embedding.getCreationDate().getTime()));
-                stmt.setDate(4, new java.sql.Date(embedding.getLastAccessed().getTime()));
+                stmt.setTimestamp(3, new java.sql.Timestamp(embedding.getCreationDate().getTime()));
+                stmt.setTimestamp(4, new java.sql.Timestamp(embedding.getLastAccessed().getTime()));
                 stmt.addBatch();
             }
             stmt.executeBatch();
@@ -193,8 +192,9 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
         } else {
             embedding.setEmbedding(new ArrayList<>());
         }
-        embedding.setCreationDate(rs.getDate("creation_date"));
-        embedding.setLastAccessed(rs.getDate("last_accessed"));
-        return embedding;
+      embedding.setCreationDate(rs.getTimestamp("creation_date"));
+      embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
+
+      return embedding;
     }
 }

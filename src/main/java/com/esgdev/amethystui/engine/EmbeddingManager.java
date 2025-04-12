@@ -63,6 +63,7 @@ public class EmbeddingManager {
         List<List<Double>> embeddings = embeddingResponse.getEmbeddings();
 
         List<TextEmbedding> textEmbeddings = new ArrayList<>();
+
         for (int i = 0; i < chunks.size(); i++) {
             textEmbeddings.add(new TextEmbedding(chunks.get(i), embeddings.get(i), new Date(), new Date()));
         }

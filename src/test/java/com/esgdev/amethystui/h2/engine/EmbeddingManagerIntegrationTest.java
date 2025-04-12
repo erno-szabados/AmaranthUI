@@ -34,7 +34,7 @@ public class EmbeddingManagerIntegrationTest {
     @After
     public void tearDown() {
         // Clean database after each test
-        textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
+        //textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
     @Test
