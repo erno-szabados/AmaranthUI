@@ -1,5 +1,6 @@
 package com.esgdev.amaranthui.db;
 
+import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
 import com.esgdev.amaranthui.h2.VectorSimilarity;
 
 import java.sql.*;
@@ -16,17 +17,15 @@ import java.util.List;
  * java -cp /opt/h2/bin/h2.jar org.h2.tools.Server -help
  */
 public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
+    private final EmbeddingConfiguration config;
 
-    private final String jdbcUrl = "jdbc:h2:~/text_embeddings"; // Adjust as needed
-    private final String jdbcUser = "sa";
-    private final String jdbcPassword = "";
-
-    public TextEmbeddingDaoH2() {
+    public TextEmbeddingDaoH2(EmbeddingConfiguration config) {
+        this.config = config;
         initializeDatabase();
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(jdbcUrl, jdbcUser, jdbcPassword);
+        return DriverManager.getConnection(config.getJdbcUrl(), config.getJdbcUser(), config.getJdbcPassword());
     }
 
     private void initializeDatabase() {

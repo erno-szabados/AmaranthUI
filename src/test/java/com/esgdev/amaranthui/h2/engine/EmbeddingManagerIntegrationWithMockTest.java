@@ -60,10 +60,10 @@ public class EmbeddingManagerIntegrationWithMockTest {
         textEmbeddingDao = DependencyFactory.getTextEmbeddingDao();
 
         // Create EmbeddingConfiguration
-        EmbeddingConfiguration configuration = new EmbeddingConfiguration(512, 128);
+        EmbeddingConfiguration configuration = new EmbeddingConfiguration(512, 50, "mock-model", "jdbc:h2:~/test", "sa", "");
 
         // Initialize EmbeddingManager with configuration
-        embeddingManager = new EmbeddingManager(textEmbeddingDao, mockOllamaAPI, "mock-model", configuration);
+        embeddingManager = new EmbeddingManager(textEmbeddingDao, mockOllamaAPI, configuration);
 
         // Clean database before each test
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));

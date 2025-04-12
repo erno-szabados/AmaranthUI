@@ -13,29 +13,20 @@ import java.util.logging.Logger;
 /**
  * EmbeddingManager is responsible for generating, saving, and retrieving text embeddings.
  */
-public class EmbeddingManager {
+public class EmbeddingManager implements EmbeddingManagerInterface<TextEmbedding, String> {
 
     private static final Logger logger = Logger.getLogger(EmbeddingManager.class.getName());
 
     private final TextEmbeddingDao textEmbeddingDao;
     private final OllamaAPI ollamaAPI;
-    private final String embeddingModel;
     private final EmbeddingConfiguration configuration;
 
-    public EmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, String embeddingModel, EmbeddingConfiguration configuration) {
+    public EmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
         this.textEmbeddingDao = textEmbeddingDao;
         this.ollamaAPI = ollamaAPI;
-        this.embeddingModel = embeddingModel;
         this.configuration = configuration;
     }
 
-    /**
-     * Generates embeddings for the given text.
-     *
-     * @param text The input text to generate embeddings for.
-     * @return A list of TextEmbedding objects containing the generated embeddings.
-     * @throws EmbeddingGenerationException If an error occurs during embedding generation.
-     */
     public List<TextEmbedding> generateEmbeddings(String text) throws EmbeddingGenerationException {
         logger.info("Generating embeddings for text: " + text);
 
@@ -50,7 +41,7 @@ public class EmbeddingManager {
                 encoded += configuration.getChunkSize() - configuration.getOverlap();
             }
 
-            OllamaEmbedResponseModel embeddingResponse = ollamaAPI.embed(embeddingModel, chunks);
+            OllamaEmbedResponseModel embeddingResponse = ollamaAPI.embed(configuration.getEmbeddingModel(), chunks);
             List<List<Double>> embeddings = embeddingResponse.getEmbeddings();
 
             List<TextEmbedding> textEmbeddings = new ArrayList<>();
