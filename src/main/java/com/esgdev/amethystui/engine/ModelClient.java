@@ -1,6 +1,7 @@
 package com.esgdev.amethystui.engine;
 
 import com.esgdev.amethystui.DependencyFactory;
+import com.esgdev.amethystui.db.TextEmbedding;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,7 +12,7 @@ public class ModelClient {
     public ModelClient() {
         embeddingManager = DependencyFactory.createEmbeddingManager();
         try {
-            List<List<Double>> embeddings = embeddingManager.generateEmbeddings("Hello, world!");
+            List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings("Hello, world!");
 
             embeddingManager.saveEmbeddings("Hello, world!", embeddings);
 
