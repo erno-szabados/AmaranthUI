@@ -3,6 +3,7 @@ package com.esgdev.amaranthui.h2.engine;
 import com.esgdev.amaranthui.DependencyFactory;
 import com.esgdev.amaranthui.db.TextEmbedding;
 import com.esgdev.amaranthui.db.TextEmbeddingDao;
+import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
 import com.esgdev.amaranthui.engine.EmbeddingManager;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
@@ -57,7 +58,12 @@ public class EmbeddingManagerIntegrationWithMockTest {
 
         // Initialize dependencies
         textEmbeddingDao = DependencyFactory.getTextEmbeddingDao();
-        embeddingManager = new EmbeddingManager(textEmbeddingDao, mockOllamaAPI, "mock-model");
+
+        // Create EmbeddingConfiguration
+        EmbeddingConfiguration configuration = new EmbeddingConfiguration(512, 128);
+
+        // Initialize EmbeddingManager with configuration
+        embeddingManager = new EmbeddingManager(textEmbeddingDao, mockOllamaAPI, "mock-model", configuration);
 
         // Clean database before each test
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
@@ -84,7 +90,7 @@ public class EmbeddingManagerIntegrationWithMockTest {
         List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
 
         // Save embeddings
-        embeddingManager.saveEmbeddings(text, embeddings);
+        embeddingManager.saveEmbeddings(embeddings);
 
         // Retrieve embeddings
         List<TextEmbedding> retrievedEmbeddings = textEmbeddingDao.getAllEmbeddings();

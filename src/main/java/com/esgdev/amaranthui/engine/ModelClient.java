@@ -14,7 +14,7 @@ public class ModelClient {
         try {
             List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings("Hello, world!");
 
-            embeddingManager.saveEmbeddings("Hello, world!", embeddings);
+            embeddingManager.saveEmbeddings(embeddings);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -46,7 +46,7 @@ public class EmbeddingManagerIntegrationTest {
         List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
 
         // Save embeddings
-        embeddingManager.saveEmbeddings(text, embeddings);
+        embeddingManager.saveEmbeddings(embeddings);
 
         // Retrieve embeddings
         List<TextEmbedding> retrievedEmbeddings = textEmbeddingDao.getAllEmbeddings();
@@ -64,7 +64,7 @@ public class EmbeddingManagerIntegrationTest {
         // Generate and save embeddings
         String text = "Hello, world!";
         List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
-        embeddingManager.saveEmbeddings(text, embeddings);
+        embeddingManager.saveEmbeddings(embeddings);
 
         // Find similar embeddings
         TextEmbedding sourceEmbedding = embeddings.get(0);

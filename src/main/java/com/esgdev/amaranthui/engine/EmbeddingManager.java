@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * EmbeddingManager is responsible for generating, saving, and retrieving text embeddings.
+ */
 public class EmbeddingManager {
 
     private static final Logger logger = Logger.getLogger(EmbeddingManager.class.getName());
@@ -17,59 +20,55 @@ public class EmbeddingManager {
     private final TextEmbeddingDao textEmbeddingDao;
     private final OllamaAPI ollamaAPI;
     private final String embeddingModel;
-    private int contextLimit = 8192;
-    private static final int CHUNK_SIZE = 512;
-    private static final int OVERLAP = 50;
+    private final EmbeddingConfiguration configuration;
 
-    public EmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, String embeddingModel) {
+    public EmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, String embeddingModel, EmbeddingConfiguration configuration) {
         this.textEmbeddingDao = textEmbeddingDao;
         this.ollamaAPI = ollamaAPI;
         this.embeddingModel = embeddingModel;
+        this.configuration = configuration;
     }
 
-    public void setContextLimit(int contextLimit) {
-        this.contextLimit = contextLimit;
-    }
-
-    public int getContextLimit() {
-        return contextLimit;
-    }
-
-    public void saveEmbeddings(String text, List<TextEmbedding> embeddings) {
-        if (embeddings == null || embeddings.isEmpty()) {
-            throw new IllegalArgumentException("Embeddings cannot be null or empty.");
-        }
-
-        textEmbeddingDao.addEmbedding(embeddings);
-    }
-
-    public List<TextEmbedding> generateEmbeddings(String text) throws Exception {
+    /**
+     * Generates embeddings for the given text.
+     *
+     * @param text The input text to generate embeddings for.
+     * @return A list of TextEmbedding objects containing the generated embeddings.
+     * @throws EmbeddingGenerationException If an error occurs during embedding generation.
+     */
+    public List<TextEmbedding> generateEmbeddings(String text) throws EmbeddingGenerationException {
         logger.info("Generating embeddings for text: " + text);
 
-        if (CHUNK_SIZE <= OVERLAP) {
-            throw new RuntimeException("CHUNK_SIZE must be greater than OVERLAP");
+        try {
+            List<String> chunks = new ArrayList<>();
+            int encoded = 0;
+            int total = text.length();
+
+            while (encoded < total) {
+                int end = Math.min(encoded + configuration.getChunkSize(), total);
+                chunks.add(text.substring(encoded, end));
+                encoded += configuration.getChunkSize() - configuration.getOverlap();
+            }
+
+            OllamaEmbedResponseModel embeddingResponse = ollamaAPI.embed(embeddingModel, chunks);
+            List<List<Double>> embeddings = embeddingResponse.getEmbeddings();
+
+            List<TextEmbedding> textEmbeddings = new ArrayList<>();
+
+            for (int i = 0; i < chunks.size(); i++) {
+                textEmbeddings.add(new TextEmbedding(chunks.get(i), embeddings.get(i), new Date(), new Date()));
+            }
+
+            logger.info("Embeddings generated successfully for all chunks.");
+            return textEmbeddings;
+
+        } catch (Exception e) {
+            throw new EmbeddingGenerationException("Failed to generate embeddings", e);
         }
+    }
 
-        List<String> chunks = new ArrayList<>();
-        int start = 0;
-
-        while (start < text.length()) {
-            int end = Math.min(start + CHUNK_SIZE, text.length());
-            chunks.add(text.substring(start, end));
-            start += CHUNK_SIZE - OVERLAP;
-        }
-
-        OllamaEmbedResponseModel embeddingResponse = ollamaAPI.embed(embeddingModel, chunks);
-        List<List<Double>> embeddings = embeddingResponse.getEmbeddings();
-
-        List<TextEmbedding> textEmbeddings = new ArrayList<>();
-
-        for (int i = 0; i < chunks.size(); i++) {
-            textEmbeddings.add(new TextEmbedding(chunks.get(i), embeddings.get(i), new Date(), new Date()));
-        }
-
-        logger.info("Embeddings generated successfully for all chunks.");
-        return textEmbeddings;
+    public void saveEmbeddings(List<TextEmbedding> embeddings) {
+        textEmbeddingDao.addEmbedding(embeddings);
     }
 
     public List<TextEmbedding> findSimilarEmbeddings(TextEmbedding sourceEmbedding, int limit) {
