@@ -1,4 +1,4 @@
-package com.esgdev.amethystui.h2;
+package com.esgdev.amaranthui.h2;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.esgdev.amethystui.db;
+package com.esgdev.amaranthui.db;
 
 import java.util.Date;
 import java.util.List;

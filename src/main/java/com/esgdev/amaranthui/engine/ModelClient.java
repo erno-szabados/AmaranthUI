@@ -1,7 +1,7 @@
-package com.esgdev.amethystui.engine;
+package com.esgdev.amaranthui.engine;
 
-import com.esgdev.amethystui.DependencyFactory;
-import com.esgdev.amethystui.db.TextEmbedding;
+import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.db.TextEmbedding;
 
 import java.util.List;
 import java.util.logging.Logger;

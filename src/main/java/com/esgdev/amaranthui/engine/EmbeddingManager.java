@@ -1,7 +1,7 @@
-package com.esgdev.amethystui.engine;
+package com.esgdev.amaranthui.engine;
 
-import com.esgdev.amethystui.db.TextEmbedding;
-import com.esgdev.amethystui.db.TextEmbeddingDao;
+import com.esgdev.amaranthui.db.TextEmbedding;
+import com.esgdev.amaranthui.db.TextEmbeddingDao;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 

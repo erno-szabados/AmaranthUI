@@ -1,9 +1,6 @@
-package com.esgdev.amethystui;
+package com.esgdev.amaranthui;
 
-import com.esgdev.amethystui.engine.ModelClient;
-import com.esgdev.amethystui.ui.MainFrame;
-
-import javax.swing.*;
+import com.esgdev.amaranthui.engine.ModelClient;
 
 public class Main {
     public static void main(String[] args) {

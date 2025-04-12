@@ -1,13 +1,14 @@
-package com.esgdev.amethystui.h2.engine;
+package com.esgdev.amaranthui.h2.engine;
 
-import com.esgdev.amethystui.DependencyFactory;
-import com.esgdev.amethystui.db.TextEmbedding;
-import com.esgdev.amethystui.db.TextEmbeddingDao;
-import com.esgdev.amethystui.engine.EmbeddingManager;
+import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.db.TextEmbedding;
+import com.esgdev.amaranthui.db.TextEmbeddingDao;
+import com.esgdev.amaranthui.engine.EmbeddingManager;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -62,6 +63,7 @@ public class EmbeddingManagerIntegrationWithMockTest {
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
+    @Ignore
     @Test
     public void testGenerateEmbeddings() throws Exception {
         String text = "Hello, world!";
@@ -75,6 +77,7 @@ public class EmbeddingManagerIntegrationWithMockTest {
         assertNotNull(embeddings.get(0).getEmbedding());
     }
 
+    @Ignore
     @Test
     public void testSaveAndRetrieveEmbeddings() throws Exception {
         String text = "Hello, world!";

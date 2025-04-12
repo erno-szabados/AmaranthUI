@@ -1,4 +1,4 @@
-package com.esgdev.amethystui.ui;
+package com.esgdev.amaranthui.ui;
 
 import javax.swing.*;
 import java.awt.*;

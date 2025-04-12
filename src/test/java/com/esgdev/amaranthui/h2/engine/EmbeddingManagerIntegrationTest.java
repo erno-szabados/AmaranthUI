@@ -1,11 +1,12 @@
-package com.esgdev.amethystui.h2.engine;
+package com.esgdev.amaranthui.h2.engine;
 
-import com.esgdev.amethystui.DependencyFactory;
-import com.esgdev.amethystui.db.TextEmbedding;
-import com.esgdev.amethystui.db.TextEmbeddingDao;
-import com.esgdev.amethystui.engine.EmbeddingManager;
+import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.db.TextEmbedding;
+import com.esgdev.amaranthui.db.TextEmbeddingDao;
+import com.esgdev.amaranthui.engine.EmbeddingManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class EmbeddingManagerIntegrationTest {
         //textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
+    @Ignore("This test requires a running Ollama API instance.")
     @Test
     public void testSaveAndRetrieveEmbeddings() throws Exception {
         // Generate embeddings
@@ -55,6 +57,8 @@ public class EmbeddingManagerIntegrationTest {
         assertEquals(embeddings.get(0).getChunk(), retrievedEmbeddings.get(0).getChunk());
     }
 
+
+    @Ignore("This test requires a running Ollama API instance.")
     @Test
     public void testFindSimilarEmbeddings() throws Exception {
         // Generate and save embeddings

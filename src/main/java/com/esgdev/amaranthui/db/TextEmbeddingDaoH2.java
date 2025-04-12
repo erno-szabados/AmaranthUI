@@ -1,10 +1,9 @@
-package com.esgdev.amethystui.db;
+package com.esgdev.amaranthui.db;
 
-import com.esgdev.amethystui.h2.VectorSimilarity;
+import com.esgdev.amaranthui.h2.VectorSimilarity;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,6 +50,9 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
 
     private static void registerVectorFunctions(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
+            // Drop existing aliases if the class names change
+            //statement.execute("DROP ALIAS COSINE_SIMILARITY IF EXISTS");
+            //statement.execute("DROP ALIAS EUCLIDEAN_DISTANCE IF EXISTS");
             statement.execute("CREATE ALIAS IF NOT EXISTS COSINE_SIMILARITY FOR \"" + VectorSimilarity.class.getName() + ".cosineSimilarity\"");
             statement.execute("CREATE ALIAS IF NOT EXISTS EUCLIDEAN_DISTANCE FOR \"" + VectorSimilarity.class.getName() + ".euclideanDistance\"");
         } catch (SQLException e) {
