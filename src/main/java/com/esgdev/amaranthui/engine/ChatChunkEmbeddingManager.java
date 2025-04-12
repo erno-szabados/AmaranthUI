@@ -1,7 +1,7 @@
 package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.ChatChunkEmbedding;
-import com.esgdev.amaranthui.db.ChatChunkEmbeddingDao;
+import com.esgdev.amaranthui.db.EmbeddingDao;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 
@@ -16,11 +16,11 @@ import java.util.logging.Logger;
 public class ChatChunkEmbeddingManager implements EmbeddingManagerInterface<ChatChunkEmbedding, ChatEntry> {
     private static final Logger logger = Logger.getLogger(ChatChunkEmbeddingManager.class.getName());
 
-    private final ChatChunkEmbeddingDao chatChunkEmbeddingDao;
+    private final EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao;
     private final OllamaAPI ollamaAPI;
     private final EmbeddingConfiguration configuration;
 
-    public ChatChunkEmbeddingManager(ChatChunkEmbeddingDao embeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
+    public ChatChunkEmbeddingManager(EmbeddingDao<ChatChunkEmbedding> embeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
         this.chatChunkEmbeddingDao = embeddingDao;
         this.ollamaAPI = ollamaAPI;
         this.configuration = configuration;
@@ -73,9 +73,7 @@ public class ChatChunkEmbeddingManager implements EmbeddingManagerInterface<Chat
     @Override
     public void saveEmbeddings(List<ChatChunkEmbedding> embeddings) {
         // Save chat embeddings
-        for (ChatChunkEmbedding embedding : embeddings) {
-            chatChunkEmbeddingDao.insertEmbedding(embedding);
-        }
+        chatChunkEmbeddingDao.addEmbedding(embeddings);
     }
 
     @Override
@@ -84,7 +82,7 @@ public class ChatChunkEmbeddingManager implements EmbeddingManagerInterface<Chat
         return chatChunkEmbeddingDao.findEmbeddingsNear(sourceEmbedding, limit);
     }
 
-    public ChatChunkEmbeddingDao getChatChunkEmbeddingDao() {
+    public EmbeddingDao<ChatChunkEmbedding> getChatChunkEmbeddingDao() {
         return chatChunkEmbeddingDao;
     }
 }

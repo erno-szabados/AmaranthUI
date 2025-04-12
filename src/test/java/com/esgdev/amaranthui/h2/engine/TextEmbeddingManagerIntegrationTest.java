@@ -1,8 +1,8 @@
 package com.esgdev.amaranthui.h2.engine;
 
 import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.db.EmbeddingDao;
 import com.esgdev.amaranthui.db.TextEmbedding;
-import com.esgdev.amaranthui.db.TextEmbeddingDao;
 import com.esgdev.amaranthui.engine.TextEmbeddingManager;
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public class TextEmbeddingManagerIntegrationTest {
 
     private TextEmbeddingManager textEmbeddingManager;
-    private TextEmbeddingDao textEmbeddingDao;
+    private EmbeddingDao<TextEmbedding> textEmbeddingDao;
 
     @Before
     public void setUp() {

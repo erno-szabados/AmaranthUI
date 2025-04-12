@@ -16,7 +16,7 @@ import java.util.List;
  * Hint: to browse the database, you can use the builtin tool, for example:
  * java -cp /opt/h2/bin/h2.jar org.h2.tools.Server -help
  */
-public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
+public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
     private final EmbeddingConfiguration config;
 
     public TextEmbeddingDaoH2(EmbeddingConfiguration config) {
@@ -60,7 +60,7 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
     }
 
     @Override
-    public TextEmbedding getEmbeddingById(long id) {
+    public TextEmbedding getEmbeddingById(Long id) {
         String sql = "SELECT * FROM embeddings WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -133,7 +133,7 @@ public class TextEmbeddingDaoH2 implements TextEmbeddingDao {
     }
 
     @Override
-    public void deleteEmbedding(long id) {
+    public void deleteEmbedding(Long id) {
         String sql = "DELETE FROM embeddings WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

@@ -9,7 +9,7 @@ import java.util.Properties;
 public class DependencyFactory {
 
     private static final OllamaAPI ollamaAPI;
-    private static final TextEmbeddingDao textEmbeddingDao;
+    private static final EmbeddingDao<TextEmbedding> textEmbeddingDao;
     private static final EmbeddingConfiguration embeddingConfiguration;
     private static final ChatConfiguration chatConfiguration;
 
@@ -52,13 +52,13 @@ public class DependencyFactory {
         return new TextEmbeddingManager(textEmbeddingDao, ollamaAPI, embeddingConfiguration);
     }
 
-    public static TextEmbeddingDao getTextEmbeddingDao() {
+    public static EmbeddingDao<TextEmbedding> getTextEmbeddingDao() {
         return textEmbeddingDao;
     }
 
     public static ChatChunkEmbeddingManager createChatChunkEmbeddingManager() {
         // Create an instance of ChatChunkEmbeddingDao (you may need to implement this if not already done)
-        ChatChunkEmbeddingDao chatChunkEmbeddingDao = new ChatChunkEmbeddingDaoH2(embeddingConfiguration);
+        EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao = new ChatChunkEmbeddingDaoH2(embeddingConfiguration);
 
         // Return a new instance of ChatChunkEmbeddingManager
         return new ChatChunkEmbeddingManager(chatChunkEmbeddingDao, ollamaAPI, embeddingConfiguration);

@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
+public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding> {
     private final EmbeddingConfiguration config;
 
     public ChatChunkEmbeddingDaoH2(EmbeddingConfiguration config) {
@@ -41,7 +41,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public Long insertEmbedding(ChatChunkEmbedding embedding) {
+    public void addEmbedding(ChatChunkEmbedding embedding) {
         String sql = """
                 INSERT INTO chat_chunk_embeddings 
                 (chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id) 
@@ -58,69 +58,35 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
             stmt.setString(7, embedding.getRole());
             stmt.setObject(8, embedding.getReplyToChunkId());
             stmt.executeUpdate();
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getLong(1);
-                }
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     @Override
-    public ChatChunkEmbedding getEmbeddingById(Long id) {
-        String sql = "SELECT * FROM chat_chunk_embeddings WHERE id = ?";
+    public void addEmbedding(List<ChatChunkEmbedding> embeddings) {
+        String sql = """
+                INSERT INTO chat_chunk_embeddings
+                (chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                """;
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToChatChunkEmbedding(rs);
-                }
+            for (ChatChunkEmbedding embedding : embeddings) {
+                stmt.setString(1, embedding.getChunk());
+                stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
+                stmt.setTimestamp(3, new Timestamp(embedding.getCreationDate().getTime()));
+                stmt.setTimestamp(4, new Timestamp(embedding.getLastAccessed().getTime()));
+                stmt.setObject(5, embedding.getConversationId());
+                stmt.setObject(6, embedding.getUserId());
+                stmt.setString(7, embedding.getRole());
+                stmt.setObject(8, embedding.getReplyToChunkId());
+                stmt.addBatch();
             }
+            stmt.executeBatch();
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Handle exceptions properly
         }
-        return null;
-    }
-
-    @Override
-    public List<ChatChunkEmbedding> getEmbeddingsByConversationId(Long conversationId) {
-        String sql = "SELECT * FROM chat_chunk_embeddings WHERE conversation_id = ?";
-        List<ChatChunkEmbedding> embeddings = new ArrayList<>();
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, conversationId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    embeddings.add(mapResultSetToChatChunkEmbedding(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return embeddings;
-    }
-
-    @Override
-    public List<ChatChunkEmbedding> getEmbeddingsByUserId(Long userId) {
-        String sql = "SELECT * FROM chat_chunk_embeddings WHERE user_id = ?";
-        List<ChatChunkEmbedding> embeddings = new ArrayList<>();
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    embeddings.add(mapResultSetToChatChunkEmbedding(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return embeddings;
     }
 
     @Override
@@ -190,6 +156,23 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
             e.printStackTrace(); // Handle exceptions properly
         }
         return similarEmbeddings;
+    }
+
+    @Override
+    public ChatChunkEmbedding getEmbeddingById(Long id) {
+        String sql = "SELECT * FROM chat_chunk_embeddings WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToChatChunkEmbedding(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+        return null; // Return null if no embedding is found
     }
 
     @Override

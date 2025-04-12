@@ -2,9 +2,8 @@ package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.DependencyFactory;
 import com.esgdev.amaranthui.db.ChatChunkEmbedding;
-import com.esgdev.amaranthui.db.ChatChunkEmbeddingDao;
 import com.esgdev.amaranthui.db.TextEmbedding;
-import com.esgdev.amaranthui.db.TextEmbeddingDao;
+import com.esgdev.amaranthui.db.EmbeddingDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,8 +20,8 @@ import static org.junit.Assert.*;
 public class ModelClientIntegrationTest {
 
     private ModelClient modelClient;
-    private ChatChunkEmbeddingDao chatChunkEmbeddingDao;
-    private TextEmbeddingDao textEmbeddingDao;
+    private EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao;
+    private EmbeddingDao<TextEmbedding> textEmbeddingDao;
 
     @Before
     public void setUp() {
@@ -39,8 +38,8 @@ public class ModelClientIntegrationTest {
     @After
     public void tearDown() {
         // Clean up database after each test
-        chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteEmbedding(embedding.getId()));
-        textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
+        //chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteEmbedding(embedding.getId()));
+        //textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
     @Test

@@ -1,7 +1,7 @@
 package com.esgdev.amaranthui.engine;
 
+import com.esgdev.amaranthui.db.EmbeddingDao;
 import com.esgdev.amaranthui.db.TextEmbedding;
-import com.esgdev.amaranthui.db.TextEmbeddingDao;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 
@@ -17,11 +17,11 @@ public class TextEmbeddingManager implements EmbeddingManagerInterface<TextEmbed
 
     private static final Logger logger = Logger.getLogger(TextEmbeddingManager.class.getName());
 
-    private final TextEmbeddingDao textEmbeddingDao;
+    private final EmbeddingDao<TextEmbedding> textEmbeddingDao;
     private final OllamaAPI ollamaAPI;
     private final EmbeddingConfiguration configuration;
 
-    public TextEmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
+    public TextEmbeddingManager(EmbeddingDao<TextEmbedding> textEmbeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
         this.textEmbeddingDao = textEmbeddingDao;
         this.ollamaAPI = ollamaAPI;
         this.configuration = configuration;

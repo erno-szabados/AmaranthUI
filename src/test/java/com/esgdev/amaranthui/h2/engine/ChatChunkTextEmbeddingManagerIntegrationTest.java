@@ -2,7 +2,7 @@ package com.esgdev.amaranthui.h2.engine;
 
 import com.esgdev.amaranthui.DependencyFactory;
 import com.esgdev.amaranthui.db.ChatChunkEmbedding;
-import com.esgdev.amaranthui.db.ChatChunkEmbeddingDao;
+import com.esgdev.amaranthui.db.EmbeddingDao;
 import com.esgdev.amaranthui.engine.ChatChunkEmbeddingManager;
 import com.esgdev.amaranthui.engine.ChatEntry;
 import com.esgdev.amaranthui.engine.EmbeddingGenerationException;
@@ -24,13 +24,13 @@ import static org.junit.Assert.*;
 public class ChatChunkTextEmbeddingManagerIntegrationTest {
 
     private ChatChunkEmbeddingManager chatChunkEmbeddingManager;
-    private ChatChunkEmbeddingDao chatChunkEmbeddingDao;
+    private EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao;
 
     @Before
     public void setUp() {
         // Initialize dependencies
         chatChunkEmbeddingDao = DependencyFactory.createChatChunkEmbeddingManager().getChatChunkEmbeddingDao();
-        chatChunkEmbeddingManager = (ChatChunkEmbeddingManager) DependencyFactory.createChatChunkEmbeddingManager();
+        chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
 
         // Clean database before each test
         chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteEmbedding(embedding.getId()));
