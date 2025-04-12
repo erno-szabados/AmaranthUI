@@ -41,7 +41,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public Long insertChatChunkEmbedding(ChatChunkEmbedding embedding) {
+    public Long insertEmbedding(ChatChunkEmbedding embedding) {
         String sql = """
                 INSERT INTO chat_chunk_embeddings 
                 (chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id) 
@@ -71,7 +71,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public ChatChunkEmbedding getChatChunkEmbeddingById(Long id) {
+    public ChatChunkEmbedding getEmbeddingById(Long id) {
         String sql = "SELECT * FROM chat_chunk_embeddings WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -88,7 +88,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public List<ChatChunkEmbedding> getChatChunkEmbeddingsByConversationId(Long conversationId) {
+    public List<ChatChunkEmbedding> getEmbeddingsByConversationId(Long conversationId) {
         String sql = "SELECT * FROM chat_chunk_embeddings WHERE conversation_id = ?";
         List<ChatChunkEmbedding> embeddings = new ArrayList<>();
         try (Connection conn = getConnection();
@@ -106,7 +106,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public List<ChatChunkEmbedding> getChatChunkEmbeddingsByUserId(Long userId) {
+    public List<ChatChunkEmbedding> getEmbeddingsByUserId(Long userId) {
         String sql = "SELECT * FROM chat_chunk_embeddings WHERE user_id = ?";
         List<ChatChunkEmbedding> embeddings = new ArrayList<>();
         try (Connection conn = getConnection();
@@ -124,7 +124,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public void updateChatChunkEmbedding(ChatChunkEmbedding embedding) {
+    public void updateEmbedding(ChatChunkEmbedding embedding) {
         String sql = """
                 UPDATE chat_chunk_embeddings 
                 SET chunk = ?, embedding = ?, last_accessed = ?, conversation_id = ?, user_id = ?, role = ?, reply_to_chunk_id = ? 
@@ -147,7 +147,7 @@ public class ChatChunkEmbeddingDaoH2 implements ChatChunkEmbeddingDao {
     }
 
     @Override
-    public void deleteChatChunkEmbedding(Long id) {
+    public void deleteEmbedding(Long id) {
         String sql = "DELETE FROM chat_chunk_embeddings WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

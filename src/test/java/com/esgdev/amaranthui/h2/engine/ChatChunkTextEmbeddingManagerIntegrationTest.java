@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
  * Integration test for the ChatChunkEmbeddingManager class.
  * This test interacts with the actual database and dependencies.
  */
-public class ChatChunkEmbeddingManagerIntegrationTest {
+public class ChatChunkTextEmbeddingManagerIntegrationTest {
 
     private ChatChunkEmbeddingManager chatChunkEmbeddingManager;
     private ChatChunkEmbeddingDao chatChunkEmbeddingDao;
@@ -33,13 +33,13 @@ public class ChatChunkEmbeddingManagerIntegrationTest {
         chatChunkEmbeddingManager = (ChatChunkEmbeddingManager) DependencyFactory.createChatChunkEmbeddingManager();
 
         // Clean database before each test
-        chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteChatChunkEmbedding(embedding.getId()));
+        chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
     @After
     public void tearDown() {
         // Clean database after each test
-        chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteChatChunkEmbedding(embedding.getId()));
+        //chatChunkEmbeddingDao.getAllEmbeddings().forEach(embedding -> chatChunkEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
     @Ignore("This test requires a running embedding generation service.")

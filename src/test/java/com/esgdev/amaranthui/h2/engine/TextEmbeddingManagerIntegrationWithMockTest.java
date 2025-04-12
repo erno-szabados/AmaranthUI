@@ -4,7 +4,7 @@ import com.esgdev.amaranthui.DependencyFactory;
 import com.esgdev.amaranthui.db.TextEmbedding;
 import com.esgdev.amaranthui.db.TextEmbeddingDao;
 import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
-import com.esgdev.amaranthui.engine.EmbeddingManager;
+import com.esgdev.amaranthui.engine.TextEmbeddingManager;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
@@ -24,9 +24,9 @@ import static org.mockito.Mockito.*;
  * Integration test for the EmbeddingManager class using a mocked OllamaAPI.
  * This test does not interact with the actual database or API.
  */
-public class EmbeddingManagerIntegrationWithMockTest {
+public class TextEmbeddingManagerIntegrationWithMockTest {
 
-    private EmbeddingManager embeddingManager;
+    private TextEmbeddingManager textEmbeddingManager;
     private OllamaAPI mockOllamaAPI;
     private TextEmbeddingDao textEmbeddingDao;
 
@@ -63,7 +63,7 @@ public class EmbeddingManagerIntegrationWithMockTest {
         EmbeddingConfiguration configuration = new EmbeddingConfiguration(512, 50, "mock-model", "jdbc:h2:~/test", "sa", "");
 
         // Initialize EmbeddingManager with configuration
-        embeddingManager = new EmbeddingManager(textEmbeddingDao, mockOllamaAPI, configuration);
+        textEmbeddingManager = new TextEmbeddingManager(textEmbeddingDao, mockOllamaAPI, configuration);
 
         // Clean database before each test
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
@@ -73,7 +73,7 @@ public class EmbeddingManagerIntegrationWithMockTest {
     @Test
     public void testGenerateEmbeddings() throws Exception {
         String text = "Hello, world!";
-        List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
+        List<TextEmbedding> embeddings = textEmbeddingManager.generateEmbeddings(text);
 
         // Assertions
         assertNotNull(embeddings);
@@ -87,10 +87,10 @@ public class EmbeddingManagerIntegrationWithMockTest {
     @Test
     public void testSaveAndRetrieveEmbeddings() throws Exception {
         String text = "Hello, world!";
-        List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
+        List<TextEmbedding> embeddings = textEmbeddingManager.generateEmbeddings(text);
 
         // Save embeddings
-        embeddingManager.saveEmbeddings(embeddings);
+        textEmbeddingManager.saveEmbeddings(embeddings);
 
         // Retrieve embeddings
         List<TextEmbedding> retrievedEmbeddings = textEmbeddingDao.getAllEmbeddings();

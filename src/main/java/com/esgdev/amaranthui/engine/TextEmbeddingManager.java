@@ -13,15 +13,15 @@ import java.util.logging.Logger;
 /**
  * EmbeddingManager is responsible for generating, saving, and retrieving text embeddings.
  */
-public class EmbeddingManager implements EmbeddingManagerInterface<TextEmbedding, String> {
+public class TextEmbeddingManager implements EmbeddingManagerInterface<TextEmbedding, String> {
 
-    private static final Logger logger = Logger.getLogger(EmbeddingManager.class.getName());
+    private static final Logger logger = Logger.getLogger(TextEmbeddingManager.class.getName());
 
     private final TextEmbeddingDao textEmbeddingDao;
     private final OllamaAPI ollamaAPI;
     private final EmbeddingConfiguration configuration;
 
-    public EmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
+    public TextEmbeddingManager(TextEmbeddingDao textEmbeddingDao, OllamaAPI ollamaAPI, EmbeddingConfiguration configuration) {
         this.textEmbeddingDao = textEmbeddingDao;
         this.ollamaAPI = ollamaAPI;
         this.configuration = configuration;

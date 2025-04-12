@@ -3,7 +3,7 @@ package com.esgdev.amaranthui.h2.engine;
 import com.esgdev.amaranthui.DependencyFactory;
 import com.esgdev.amaranthui.db.TextEmbedding;
 import com.esgdev.amaranthui.db.TextEmbeddingDao;
-import com.esgdev.amaranthui.engine.EmbeddingManager;
+import com.esgdev.amaranthui.engine.TextEmbeddingManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -17,16 +17,16 @@ import static org.junit.Assert.*;
  * Integration test for the EmbeddingManager class.
  * This test interacts with the actual database and Ollama API.
  */
-public class EmbeddingManagerIntegrationTest {
+public class TextEmbeddingManagerIntegrationTest {
 
-    private EmbeddingManager embeddingManager;
+    private TextEmbeddingManager textEmbeddingManager;
     private TextEmbeddingDao textEmbeddingDao;
 
     @Before
     public void setUp() {
         // Initialize dependencies
         textEmbeddingDao = DependencyFactory.getTextEmbeddingDao();
-        embeddingManager = DependencyFactory.createEmbeddingManager();
+        textEmbeddingManager = DependencyFactory.createEmbeddingManager();
 
         // Clean database before each test
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
@@ -43,10 +43,10 @@ public class EmbeddingManagerIntegrationTest {
     public void testSaveAndRetrieveEmbeddings() throws Exception {
         // Generate embeddings
         String text = "Hello, world!";
-        List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
+        List<TextEmbedding> embeddings = textEmbeddingManager.generateEmbeddings(text);
 
         // Save embeddings
-        embeddingManager.saveEmbeddings(embeddings);
+        textEmbeddingManager.saveEmbeddings(embeddings);
 
         // Retrieve embeddings
         List<TextEmbedding> retrievedEmbeddings = textEmbeddingDao.getAllEmbeddings();
@@ -63,12 +63,12 @@ public class EmbeddingManagerIntegrationTest {
     public void testFindSimilarEmbeddings() throws Exception {
         // Generate and save embeddings
         String text = "Hello, world!";
-        List<TextEmbedding> embeddings = embeddingManager.generateEmbeddings(text);
-        embeddingManager.saveEmbeddings(embeddings);
+        List<TextEmbedding> embeddings = textEmbeddingManager.generateEmbeddings(text);
+        textEmbeddingManager.saveEmbeddings(embeddings);
 
         // Find similar embeddings
         TextEmbedding sourceEmbedding = embeddings.get(0);
-        List<TextEmbedding> similarEmbeddings = embeddingManager.findSimilarEmbeddings(sourceEmbedding, 5);
+        List<TextEmbedding> similarEmbeddings = textEmbeddingManager.findSimilarEmbeddings(sourceEmbedding, 5);
 
         // Assertions
         assertNotNull(similarEmbeddings);

@@ -3,12 +3,12 @@ package com.esgdev.amaranthui.db;
 import java.util.List;
 
 public interface ChatChunkEmbeddingDao {
-    Long insertChatChunkEmbedding(ChatChunkEmbedding embedding);
-    ChatChunkEmbedding getChatChunkEmbeddingById(Long id);
-    List<ChatChunkEmbedding> getChatChunkEmbeddingsByConversationId(Long conversationId);
-    List<ChatChunkEmbedding> getChatChunkEmbeddingsByUserId(Long userId);
-    void updateChatChunkEmbedding(ChatChunkEmbedding embedding);
-    void deleteChatChunkEmbedding(Long id);
+    Long insertEmbedding(ChatChunkEmbedding embedding);
+    ChatChunkEmbedding getEmbeddingById(Long id);
+    List<ChatChunkEmbedding> getEmbeddingsByConversationId(Long conversationId);
+    List<ChatChunkEmbedding> getEmbeddingsByUserId(Long userId);
+    void updateEmbedding(ChatChunkEmbedding embedding);
+    void deleteEmbedding(Long id);
     List<ChatChunkEmbedding> findEmbeddingsNear(ChatChunkEmbedding sourceEmbedding, int limit);
 
     List<ChatChunkEmbedding> getAllEmbeddings();

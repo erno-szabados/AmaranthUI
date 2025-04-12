@@ -11,6 +11,7 @@ public class DependencyFactory {
     private static final OllamaAPI ollamaAPI;
     private static final TextEmbeddingDao textEmbeddingDao;
     private static final EmbeddingConfiguration embeddingConfiguration;
+    private static final ChatConfiguration chatConfiguration;
 
     static {
         try {
@@ -30,9 +31,12 @@ public class DependencyFactory {
             String jdbcUser = properties.getProperty("jdbc_user", "sa");
             String jdbcPassword = properties.getProperty("jdbc_password", "");
 
+            int chatHistorySize = Integer.parseInt(properties.getProperty("chat_history_size", "10"));
+            String chatModel = properties.getProperty("chat_model", "gemma3:1b");
+
             // Create EmbeddingConfiguration
             embeddingConfiguration = new EmbeddingConfiguration(chunkSize, overlap, embeddingModel, jdbcUrl, jdbcUser, jdbcPassword);
-
+            chatConfiguration = new ChatConfiguration(chatHistorySize, chatModel);
             // Initialize TextEmbeddingDao
             textEmbeddingDao = new TextEmbeddingDaoH2(embeddingConfiguration);
         } catch (Exception e) {
@@ -40,8 +44,12 @@ public class DependencyFactory {
         }
     }
 
-    public static EmbeddingManager createEmbeddingManager() {
-        return new EmbeddingManager(textEmbeddingDao, ollamaAPI, embeddingConfiguration);
+    public static OllamaAPI getOllamaAPI() {
+        return ollamaAPI;
+    }
+
+    public static TextEmbeddingManager createEmbeddingManager() {
+        return new TextEmbeddingManager(textEmbeddingDao, ollamaAPI, embeddingConfiguration);
     }
 
     public static TextEmbeddingDao getTextEmbeddingDao() {
@@ -53,6 +61,11 @@ public class DependencyFactory {
         ChatChunkEmbeddingDao chatChunkEmbeddingDao = new ChatChunkEmbeddingDaoH2(embeddingConfiguration);
 
         // Return a new instance of ChatChunkEmbeddingManager
-        return new ChatChunkEmbeddingManager(chatChunkEmbeddingDao);
+        return new ChatChunkEmbeddingManager(chatChunkEmbeddingDao, ollamaAPI, embeddingConfiguration);
+    }
+
+    public static int getChatHistorySize() {
+        // Load chat history size from properties or return a default value
+        return chatConfiguration.getChatHistorySize();
     }
 }

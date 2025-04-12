@@ -14,6 +14,18 @@ public class ChatChunkEmbedding extends TextEmbedding {
         super(); // Call the superclass constructor
     }
 
+    /**
+     * Constructor for ChatChunkEmbedding.
+     *
+     * @param chunk          The text chunk.
+     * @param embedding      The embedding vector.
+     * @param creationDate   The date of creation.
+     * @param lastAccessed   The date of last access.
+     * @param conversationId The ID of the conversation this chunk belongs to.
+     * @param userId        The ID of the user who created this chunk.
+     * @param role          The role of the user ('user' or 'model').
+     * @param replyToChunkId The ID of the chunk this chunk is a response to.
+     */
     public ChatChunkEmbedding(String chunk, List<Double> embedding, Date creationDate, Date lastAccessed,
                               Long conversationId, Long userId, String role, Long replyToChunkId) {
         super(chunk, embedding, creationDate, lastAccessed); // Call the superclass constructor
