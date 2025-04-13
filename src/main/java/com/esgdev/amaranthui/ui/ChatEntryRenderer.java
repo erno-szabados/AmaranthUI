@@ -4,15 +4,32 @@ import com.esgdev.amaranthui.engine.ChatEntry;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
 
 public class ChatEntryRenderer extends JPanel implements ListCellRenderer<ChatEntry> {
     private final Color clientColor = UIManager.getColor("Panel.background");
     private final Color userColor = UIManager.getColor("TextField.background");
 
     private final JTextArea chunkTextArea;
+    private final JLabel talkerLabel;
+    private final JLabel timestampLabel;
 
     public ChatEntryRenderer() {
         setLayout(new BorderLayout());
+
+        // Panel for talker and timestamp
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        talkerLabel = new JLabel();
+        timestampLabel = new JLabel();
+        timestampLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        headerPanel.add(talkerLabel, BorderLayout.WEST);
+        headerPanel.add(timestampLabel, BorderLayout.EAST);
+
+        // Add header panel to the top
+        add(headerPanel, BorderLayout.NORTH);
+
+        // Text area for the message content
         chunkTextArea = new JTextArea();
         chunkTextArea.setLineWrap(true);
         chunkTextArea.setWrapStyleWord(true);
@@ -28,9 +45,15 @@ public class ChatEntryRenderer extends JPanel implements ListCellRenderer<ChatEn
         chunkTextArea.setText(value.getChunk());
         if ("user".equalsIgnoreCase(value.getRole())) {
             chunkTextArea.setBackground(userColor);
+            talkerLabel.setText("User");
         } else {
             chunkTextArea.setBackground(clientColor);
+            talkerLabel.setText("Model");
         }
+
+        // Format and set the timestamp
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        timestampLabel.setText(dateFormat.format(value.getCreationDate()));
 
         // Highlight selection
         if (isSelected) {

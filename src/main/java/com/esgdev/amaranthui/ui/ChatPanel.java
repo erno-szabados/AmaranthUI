@@ -1,6 +1,7 @@
 package com.esgdev.amaranthui.ui;
 
 import com.esgdev.amaranthui.engine.ChatEntry;
+import com.esgdev.amaranthui.engine.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
 
 import javax.swing.*;
@@ -15,6 +16,8 @@ public class ChatPanel extends JPanel {
     private final JButton sendButton;
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
+
+    private final JProgressBar spinner;
 
     public ChatPanel(ModelClient modelClient) {
         this.modelClient = modelClient;
@@ -35,7 +38,13 @@ public class ChatPanel extends JPanel {
         inputField = new JTextField();
         sendButton = new JButton("Send");
 
-        // Add input field and button to the input panel
+        // Create the spinner
+        spinner = new JProgressBar();
+        spinner.setIndeterminate(true);
+        spinner.setVisible(false); // Initially hidden
+
+        // Add spinner, input field, and button to the input panel
+        inputPanel.add(spinner, BorderLayout.WEST);
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
 
@@ -47,31 +56,10 @@ public class ChatPanel extends JPanel {
         inputField.addActionListener(e -> sendMessage());
     }
 
-    private void sendMessage() {
-        String message = inputField.getText().trim();
-        if (!message.isEmpty()) {
-            // Create a new ChatEntry for the user message
-            ChatEntry userEntry = new ChatEntry(
-                    message,
-                    null, // conversationId (can be set later)
-                    null, // userId (can be set later)
-                    "user",
-                    null, // replyToChunkId
-                    new Date()
-            );
-
-            // Add the user message to the chat list
-            addChatEntry(userEntry);
-
-            // Clear the input field
-            inputField.setText("");
-
-            // Send the message to the model
-            onMessageSend(userEntry);
-        }
-    }
-
     private void onMessageSend(ChatEntry userEntry) {
+        // Show the spinner
+        spinner.setVisible(true);
+
         // Use a SwingWorker to handle the interaction with the ModelClient
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
@@ -97,11 +85,47 @@ public class ChatPanel extends JPanel {
                 }
                 return null;
             }
+
+            @Override
+            protected void done() {
+                // Hide the spinner when processing is complete
+                spinner.setVisible(false);
+            }
         };
         worker.execute();
     }
 
-    public void addChatEntry(ChatEntry chatEntry) {
+    private void sendMessage() {
+        String userMessage = inputField.getText().trim();
+        if (!userMessage.isEmpty()) {
+            // Create a ChatEntry for the user's message
+            ChatEntry userEntry = new ChatEntry(
+                    userMessage,
+                    null, // conversationId (can be set later)
+                    null, // userId (can be set later)
+                    "user",
+                    null, // replyToChunkId
+                    new Date()
+            );
+
+            // Add the user's message to the chat list
+            addChatEntry(userEntry);
+
+            // Process the message
+            onMessageSend(userEntry);
+
+            // Clear the input field
+            inputField.setText("");
+        }
+    }
+
+    private void addChatEntry(ChatEntry chatEntry) {
         listModel.addElement(chatEntry);
+
+        try {
+            modelClient.addChatEntry(chatEntry);
+        } catch (EmbeddingGenerationException e) {
+            logger.log(java.util.logging.Level.SEVERE, "Error saving chat entry", e);
+        }
     }
 }
