@@ -59,10 +59,10 @@ The application will open a chat interface where you can interact with the AI mo
 ## Configuration
 The application uses a config.properties file for configuration. Key settings include:
 
-Chat History Size: Maximum number of chat entries to store.
-Chat Model: AI model to use for chat interactions.
-Embedding Model: Model used for generating embeddings.
-Database Connection: JDBC URL, username, and password for the H2 database.
+- Chat History Size: Maximum number of chat entries to store.
+- Chat Model: AI model to use for chat interactions.
+- Embedding Model: Model used for generating embeddings.
+- Database Connection: JDBC URL, username, and password for the H2 database.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See COPYING for details.
