@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.esgdev.amaranthui"},{"l":"com.esgdev.amaranthui.db"},{"l":"com.esgdev.amaranthui.db.h2"},{"l":"com.esgdev.amaranthui.engine"},{"l":"com.esgdev.amaranthui.engine.embedding"},{"l":"com.esgdev.amaranthui.ui"}];updateSearchResults();
