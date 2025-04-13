@@ -54,6 +54,19 @@ public class ModelClient {
         return chatHistory.getChatHistory();
     }
 
+    public List<ChatChunkEmbedding> findSimilarChatEmbeddings(String query, int limit) throws Exception {
+        // Generate embeddings for the query
+        ChatEntry tempEntry = new ChatEntry(query, null, null, "user", null, new Date());
+        List<ChatChunkEmbedding> queryEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
+
+        if (queryEmbeddings.isEmpty()) {
+            throw new IllegalArgumentException("No embeddings could be generated for the query.");
+        }
+
+        // Find similar embeddings
+        return chatChunkEmbeddingManager.findSimilarEmbeddings(queryEmbeddings.get(0), limit);
+    }
+
     public String sendChatRequest(String userMessage, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
         int retryCount = 0;
         int retryInterval = BASE_RETRY_INTERVAL_MS;

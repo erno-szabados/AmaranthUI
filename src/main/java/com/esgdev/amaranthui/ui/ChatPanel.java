@@ -60,7 +60,9 @@ public class ChatPanel extends JPanel {
         chatEmbeddingsCheckbox.setToolTipText("Include chat history context");
 
         textEmbeddingsCheckbox = new JCheckBox("Text");
-        textEmbeddingsCheckbox.setToolTipText("Include generic knowledge");
+        //textEmbeddingsCheckbox.setToolTipText("Include generic knowledge");
+        textEmbeddingsCheckbox.setToolTipText("TODO: Include generic knowledge");
+        textEmbeddingsCheckbox.setEnabled(false);
 
         JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         checkboxPanel.add(chatEmbeddingsCheckbox);
