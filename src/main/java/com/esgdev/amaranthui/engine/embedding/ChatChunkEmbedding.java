@@ -1,8 +1,12 @@
-package com.esgdev.amaranthui.db;
+package com.esgdev.amaranthui.engine.embedding;
 
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Represents a chat chunk embedding, which includes metadata about the conversation and user.
+ * This class extends TextEmbedding to include additional fields specific to chat interactions.
+ */
 public class ChatChunkEmbedding extends TextEmbedding {
     private Long conversationId;
     private Long userId;

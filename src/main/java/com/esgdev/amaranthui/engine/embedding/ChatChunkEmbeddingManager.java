@@ -1,6 +1,6 @@
-package com.esgdev.amaranthui.engine;
+package com.esgdev.amaranthui.engine.embedding;
 
-import com.esgdev.amaranthui.db.ChatChunkEmbedding;
+import com.esgdev.amaranthui.engine.ChatEntry;
 import com.esgdev.amaranthui.db.EmbeddingDao;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;

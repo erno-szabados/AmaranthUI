@@ -1,8 +1,7 @@
 package com.esgdev.amaranthui.engine;
 
-import com.esgdev.amaranthui.DependencyFactory;
-import com.esgdev.amaranthui.db.ChatChunkEmbedding;
-import com.esgdev.amaranthui.db.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
+import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
 import com.esgdev.amaranthui.db.EmbeddingDao;
 import org.junit.After;
 import org.junit.Before;

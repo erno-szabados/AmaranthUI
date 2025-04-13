@@ -1,11 +1,18 @@
-package com.esgdev.amaranthui;
+package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.*;
-import com.esgdev.amaranthui.engine.*;
+import com.esgdev.amaranthui.db.h2.ChatChunkEmbeddingDaoH2;
+import com.esgdev.amaranthui.db.h2.TextEmbeddingDaoH2;
+import com.esgdev.amaranthui.engine.embedding.*;
 import io.github.ollama4j.OllamaAPI;
 
 import java.util.Properties;
 
+/**
+ * DependencyFactory is responsible for creating and managing dependencies used in the application.
+ * It initializes the OllamaAPI, EmbeddingDao, and other configurations.
+ * This is a lightweight dependency injection mechanism.
+ */
 public class DependencyFactory {
 
     private static final OllamaAPI ollamaAPI;

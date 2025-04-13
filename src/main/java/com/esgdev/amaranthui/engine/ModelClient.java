@@ -1,19 +1,20 @@
 package com.esgdev.amaranthui.engine;
 
-import com.esgdev.amaranthui.DependencyFactory;
-import com.esgdev.amaranthui.db.ChatChunkEmbedding;
-import com.esgdev.amaranthui.db.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingManagerInterface;
+import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.*;
-import io.github.ollama4j.types.OllamaModelType;
 
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * ModelClient is responsible for managing the interaction with the ollama models.
- * It handles the generation and storage of embeddings for both text and chat entries.
+ * ModelClient is responsible for managing the interaction with the ollama models:
+ * - Sending chat requests to the Ollama API.
+ * - Generation and storage of embeddings for both text and chat entries.
  */
 public class ModelClient {
     private static final Logger logger = Logger.getLogger(ModelClient.class.getName());

@@ -5,6 +5,10 @@ import com.esgdev.amaranthui.engine.ModelClient;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Main application frame for the Amaranth Model Client.
+ * This frame serves as the main window for the application.
+ */
 public class MainFrame extends JFrame {
     public MainFrame() {
         setTitle("Amaranth - Model Client");

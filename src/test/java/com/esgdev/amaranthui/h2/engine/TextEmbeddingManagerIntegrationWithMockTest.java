@@ -1,10 +1,10 @@
 package com.esgdev.amaranthui.h2.engine;
 
-import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.engine.DependencyFactory;
 import com.esgdev.amaranthui.db.EmbeddingDao;
-import com.esgdev.amaranthui.db.TextEmbedding;
-import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
-import com.esgdev.amaranthui.engine.TextEmbeddingManager;
+import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
+import com.esgdev.amaranthui.engine.embedding.TextEmbeddingManager;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;

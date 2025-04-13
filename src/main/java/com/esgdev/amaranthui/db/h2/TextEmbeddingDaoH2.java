@@ -1,7 +1,8 @@
-package com.esgdev.amaranthui.db;
+package com.esgdev.amaranthui.db.h2;
 
-import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
-import com.esgdev.amaranthui.h2.VectorSimilarity;
+import com.esgdev.amaranthui.db.EmbeddingDao;
+import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 
 import java.sql.*;
 import java.util.ArrayList;

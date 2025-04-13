@@ -2,6 +2,10 @@ package com.esgdev.amaranthui.engine;
 
 import java.util.Date;
 
+/**
+ * Represents a chat entry in a conversation.
+ * Each entry can be a user message or a model response.
+ */
 public class ChatEntry {
     private String chunk;
     private Long conversationId;

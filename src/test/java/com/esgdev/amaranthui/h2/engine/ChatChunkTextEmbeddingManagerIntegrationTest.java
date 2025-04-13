@@ -1,11 +1,11 @@
 package com.esgdev.amaranthui.h2.engine;
 
-import com.esgdev.amaranthui.DependencyFactory;
-import com.esgdev.amaranthui.db.ChatChunkEmbedding;
+import com.esgdev.amaranthui.engine.DependencyFactory;
+import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
 import com.esgdev.amaranthui.db.EmbeddingDao;
-import com.esgdev.amaranthui.engine.ChatChunkEmbeddingManager;
+import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbeddingManager;
 import com.esgdev.amaranthui.engine.ChatEntry;
-import com.esgdev.amaranthui.engine.EmbeddingGenerationException;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

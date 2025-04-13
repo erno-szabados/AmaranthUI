@@ -1,7 +1,7 @@
 package com.esgdev.amaranthui.ui;
 
 import com.esgdev.amaranthui.engine.ChatEntry;
-import com.esgdev.amaranthui.engine.EmbeddingGenerationException;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
 
 import javax.swing.*;
@@ -9,6 +9,10 @@ import java.awt.*;
 import java.util.Date;
 import java.util.logging.Logger;
 
+/**
+ * ChatPanel is a Swing component that displays a chat interface.
+ * It allows users to send messages and receive responses from a model client.
+ */
 public class ChatPanel extends JPanel {
     private final JList<ChatEntry> chatList;
     private final DefaultListModel<ChatEntry> listModel;

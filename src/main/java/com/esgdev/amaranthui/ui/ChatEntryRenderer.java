@@ -6,6 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 
+/**
+ * Custom ListCellRenderer for displaying chat entries in a JList.
+ * It formats the chat entry with a talker label, timestamp, and message content.
+ */
 public class ChatEntryRenderer extends JPanel implements ListCellRenderer<ChatEntry> {
     private final Color clientColor = UIManager.getColor("Panel.background");
     private final Color userColor = UIManager.getColor("TextField.background");

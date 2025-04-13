@@ -1,5 +1,8 @@
 package com.esgdev.amaranthui.engine;
 
+/**
+ * Configuration class for chat-related settings.
+ */
 public class ChatConfiguration {
     private int chatHistorySize;
     private String chatModel;

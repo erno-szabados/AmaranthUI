@@ -2,6 +2,10 @@ package com.esgdev.amaranthui.db;
 
 import java.util.List;
 
+/**
+ * Interface for Data Access Object (DAO) for embeddings.
+ * @param <T> The type of the embedding object.
+ */
 public interface EmbeddingDao<T> {
     T getEmbeddingById(Long id);
     List<T> getAllEmbeddings();

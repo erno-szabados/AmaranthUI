@@ -1,9 +1,9 @@
 package com.esgdev.amaranthui.h2.engine;
 
-import com.esgdev.amaranthui.DependencyFactory;
+import com.esgdev.amaranthui.engine.DependencyFactory;
 import com.esgdev.amaranthui.db.EmbeddingDao;
-import com.esgdev.amaranthui.db.TextEmbedding;
-import com.esgdev.amaranthui.engine.TextEmbeddingManager;
+import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.TextEmbeddingManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

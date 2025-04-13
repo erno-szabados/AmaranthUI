@@ -1,8 +1,12 @@
-package com.esgdev.amaranthui.db;
+package com.esgdev.amaranthui.engine.embedding;
 
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Represents a text embedding.
+ * An embedding is a numerical representation of a text chunk, useful for various NLP tasks, like semantic search, and similarity.
+ */
 public class TextEmbedding {
     private Long id; // Primary key
     private String chunk;

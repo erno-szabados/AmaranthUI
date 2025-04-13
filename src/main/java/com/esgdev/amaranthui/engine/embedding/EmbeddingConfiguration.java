@@ -1,4 +1,4 @@
-package com.esgdev.amaranthui.engine;
+package com.esgdev.amaranthui.engine.embedding;
 
 /**
  * Configuration class for embedding-related settings.

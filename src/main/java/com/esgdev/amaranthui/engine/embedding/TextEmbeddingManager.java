@@ -1,7 +1,6 @@
-package com.esgdev.amaranthui.engine;
+package com.esgdev.amaranthui.engine.embedding;
 
 import com.esgdev.amaranthui.db.EmbeddingDao;
-import com.esgdev.amaranthui.db.TextEmbedding;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.embeddings.OllamaEmbedResponseModel;
 

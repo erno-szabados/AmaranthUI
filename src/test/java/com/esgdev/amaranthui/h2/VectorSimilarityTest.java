@@ -1,5 +1,6 @@
 package com.esgdev.amaranthui.h2;
 
+import com.esgdev.amaranthui.db.h2.VectorSimilarity;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.esgdev.amaranthui.engine;
+package com.esgdev.amaranthui.engine.embedding;
 
 /**
  * Custom exception for errors during embedding generation.

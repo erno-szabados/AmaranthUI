@@ -1,11 +1,17 @@
-package com.esgdev.amaranthui.db;
+package com.esgdev.amaranthui.db.h2;
 
-import com.esgdev.amaranthui.engine.EmbeddingConfiguration;
+import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
+import com.esgdev.amaranthui.db.EmbeddingDao;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * H2 implementation of the EmbeddingDao interface for ChatChunkEmbedding.
+ * This class handles the database operations for storing and retrieving chat chunk embeddings.
+ */
 public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding> {
     private final EmbeddingConfiguration config;
 
