@@ -24,6 +24,7 @@ public class ModelClient {
     private static final int BASE_RETRY_INTERVAL_MS = 2000; // Base retry interval in milliseconds
 
     private static final Logger logger = Logger.getLogger(ModelClient.class.getName());
+    public static final int SIMILAR_CHAT_CHUNK_LIMIT = 10;
 
     private final EmbeddingManagerInterface<TextEmbedding, String> textEmbeddingManager;
     private final EmbeddingManagerInterface<ChatChunkEmbedding, ChatEntry> chatChunkEmbeddingManager;
@@ -78,7 +79,7 @@ public class ModelClient {
                     List<ChatChunkEmbedding> userEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
                     if (!userEmbeddings.isEmpty()) {
                         List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
-                                userEmbeddings.get(0), 5); // Get top 5 similar chat chunks
+                                userEmbeddings.get(0), SIMILAR_CHAT_CHUNK_LIMIT); // Get top 5 similar chat chunks
                         for (ChatChunkEmbedding similar : similarChats) {
                             ragContext.add("Chat history: " + similar.getChunk());
                         }
@@ -101,12 +102,23 @@ public class ModelClient {
                     builder.withMessage(OllamaChatMessageRole.SYSTEM, contextMessage);
                 }
 
+                logger.info("Sending chat request with the following details:");
+                logger.info("User message: " + userMessage);
+                logger.info("Chat history messages: " + historyMessages);
+                logger.info("RAG context: " + String.join("\n", ragContext));
+
                 OllamaChatRequest requestModel = builder
                         .withMessages(historyMessages)
                         .withMessage(OllamaChatMessageRole.USER, userMessage)
                         .build();
 
                 OllamaChatResult chatResult = ollamaAPI.chat(requestModel);
+
+                // Check if the response message is null
+                if (chatResult.getResponseModel() == null || chatResult.getResponseModel().getMessage() == null) {
+                    logger.severe("Received null message in response from Ollama API.");
+                    throw new IllegalStateException("The response message from Ollama API is null.");
+                }
 
                 String response = chatResult.getResponseModel().getMessage().getContent();
                 logger.info("Ollama response: " + response);
