@@ -67,7 +67,7 @@ public class ChatPanel extends JPanel {
         // Use a SwingWorker to handle the interaction with the ModelClient
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
-            protected Void doInBackground() throws Exception {
+            protected Void doInBackground() {
                 try {
                     // Send the user message to the ModelClient and get the response
                     String response = modelClient.sendChatRequest(userEntry.getChunk());

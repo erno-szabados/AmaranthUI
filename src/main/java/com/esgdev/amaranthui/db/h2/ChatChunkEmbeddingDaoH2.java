@@ -7,6 +7,7 @@ import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * H2 implementation of the EmbeddingDao interface for ChatChunkEmbedding.
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding> {
     private final EmbeddingConfiguration config;
+    Logger logger = Logger.getLogger(ChatChunkEmbeddingDaoH2.class.getName());
 
     public ChatChunkEmbeddingDaoH2(EmbeddingConfiguration config) {
         this.config = config;
@@ -65,7 +67,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             stmt.setObject(8, embedding.getReplyToChunkId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(java.util.logging.Level.SEVERE, "Failed to add embedding", e);
         }
     }
 
@@ -91,7 +93,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             }
             stmt.executeBatch();
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to add embeddings", e);
         }
     }
 
@@ -114,7 +116,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             stmt.setLong(8, embedding.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);
         }
     }
 
@@ -126,7 +128,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(java.util.logging.Level.SEVERE, "Failed to delete embeddings", e);
         }
     }
 
@@ -159,7 +161,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e); // Handle exceptions properly
         }
         return similarEmbeddings;
     }
@@ -176,7 +178,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to find embeddings", e); // Handle exceptions properly
         }
         return null; // Return null if no embedding is found
     }
@@ -192,7 +194,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                 embeddings.add(mapResultSetToChatChunkEmbedding(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to get all embeddings", e); // Handle exceptions properly
         }
         return embeddings;
     }

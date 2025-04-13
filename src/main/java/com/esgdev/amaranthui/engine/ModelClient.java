@@ -39,8 +39,7 @@ public class ModelClient {
     }
 
     /**
-     * Get the chat history as a list.
-     *
+     * Get the chat history.
      * @return
      */
     public List<ChatEntry> getChatHistory() {

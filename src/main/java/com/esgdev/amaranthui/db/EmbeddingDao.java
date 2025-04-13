@@ -13,5 +13,5 @@ public interface EmbeddingDao<T> {
     void addEmbedding(List<T> embeddings); // New overload
     void updateEmbedding(T embedding);
     void deleteEmbedding(Long id);
-    public List<T> findEmbeddingsNear(T sourceEmbedding, int limit);
+    List<T> findEmbeddingsNear(T sourceEmbedding, int limit);
 }

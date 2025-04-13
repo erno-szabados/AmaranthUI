@@ -7,6 +7,7 @@ import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * H2 implementation of TextEmbeddingDao for managing text embeddings in an H2 database.
@@ -19,6 +20,7 @@ import java.util.List;
  */
 public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
     private final EmbeddingConfiguration config;
+    Logger logger = Logger.getLogger(TextEmbeddingDaoH2.class.getName());
 
     public TextEmbeddingDaoH2(EmbeddingConfiguration config) {
         this.config = config;
@@ -71,7 +73,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 return mapResultSetToEmbedding(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to get embeddings", e);// Handle exceptions properly
         }
         return null;
     }
@@ -87,7 +89,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 embeddings.add(mapResultSetToEmbedding(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to get all embeddings", e); // Handle exceptions properly
         }
         return embeddings;
     }
@@ -113,7 +115,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
             }
             stmt.executeBatch();
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to add embeddings", e); // Handle exceptions properly
         }
     }
 
@@ -129,7 +131,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
             stmt.setLong(4, embedding.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);// Handle exceptions properly
         }
     }
 
@@ -141,7 +143,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to delete embeddings", e);// Handle exceptions properly
         }
     }
 
@@ -174,7 +176,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e);// Handle exceptions properly
         }
         return similarEmbeddings;
     }
@@ -194,9 +196,9 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
         } else {
             embedding.setEmbedding(new ArrayList<>());
         }
-      embedding.setCreationDate(rs.getTimestamp("creation_date"));
-      embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
+        embedding.setCreationDate(rs.getTimestamp("creation_date"));
+        embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
 
-      return embedding;
+        return embedding;
     }
 }
