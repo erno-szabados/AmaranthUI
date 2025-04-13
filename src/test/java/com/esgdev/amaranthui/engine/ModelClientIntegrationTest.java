@@ -74,7 +74,7 @@ public class ModelClientIntegrationTest {
     public void testSendChatRequest() throws Exception {
         // Send a chat request
         String userMessage = "What is the weather like today?";
-        String response = modelClient.sendChatRequest(userMessage);
+        String response = modelClient.sendChatRequest(userMessage, false, false);
 
         // Verify the response
         assertNotNull(response);

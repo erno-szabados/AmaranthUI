@@ -18,6 +18,9 @@ public class ChatPanel extends JPanel {
     private final DefaultListModel<ChatEntry> listModel;
     private final JTextField inputField;
     private final JButton sendButton;
+    private final JCheckBox chatEmbeddingsCheckbox;
+    private final JCheckBox textEmbeddingsCheckbox;
+
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
 
@@ -52,6 +55,20 @@ public class ChatPanel extends JPanel {
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
 
+        // Inside the ChatPanel constructor, initialize and add the checkboxes
+        chatEmbeddingsCheckbox = new JCheckBox("Chat");
+        chatEmbeddingsCheckbox.setToolTipText("Include chat history context");
+
+        textEmbeddingsCheckbox = new JCheckBox("Text");
+        textEmbeddingsCheckbox.setToolTipText("Include generic knowledge");
+
+        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        checkboxPanel.add(chatEmbeddingsCheckbox);
+        checkboxPanel.add(textEmbeddingsCheckbox);
+
+// Add the checkbox panel to the input panel
+        inputPanel.add(checkboxPanel, BorderLayout.NORTH);
+
         // Add the input panel to the bottom of the ChatPanel
         add(inputPanel, BorderLayout.SOUTH);
 
@@ -69,16 +86,24 @@ public class ChatPanel extends JPanel {
             @Override
             protected Void doInBackground() {
                 try {
+                    // Get the user's embedding preferences
+                    boolean useChatEmbeddings = chatEmbeddingsCheckbox.isSelected();
+                    boolean useTextEmbeddings = textEmbeddingsCheckbox.isSelected();
+
                     // Send the user message to the ModelClient and get the response
-                    String response = modelClient.sendChatRequest(userEntry.getChunk());
+                    String response = modelClient.sendChatRequest(
+                            userEntry.getChunk(),
+                            useChatEmbeddings,
+                            useTextEmbeddings
+                    );
 
                     // Create a new ChatEntry for the model's response
                     ChatEntry modelEntry = new ChatEntry(
                             response,
-                            null, // conversationId (can be set later)
-                            null, // userId (can be set later)
+                            null,
+                            null,
                             "model",
-                            null, // replyToChunkId
+                            null,
                             new Date()
                     );
 
