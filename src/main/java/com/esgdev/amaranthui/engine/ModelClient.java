@@ -72,19 +72,12 @@ public class ModelClient {
         return chatChunkEmbeddingManager.findSimilarEmbeddings(queryEmbeddings.get(0), limit);
     }
 
-    public String sendChatRequest(String userMessage, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
+    public String sendChatRequest(String systemPrompt, String userMessage, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
         int retryCount = 0;
         int retryInterval = BASE_RETRY_INTERVAL_MS;
 
         while (retryCount < MAX_RETRIES) {
             try {
-                // Transform chat history into OllamaChatMessage objects
-                List<OllamaChatMessage> historyMessages = chatHistory.stream()
-                        .map(entry -> new OllamaChatMessage(
-                                entry.getRole().equalsIgnoreCase("user") ? OllamaChatMessageRole.USER : OllamaChatMessageRole.ASSISTANT,
-                                entry.getChunk()
-                        ))
-                        .collect(Collectors.toList());
 
                 // Create a request builder
                 String modelName = ChatConfiguration.getChatModel();
@@ -93,33 +86,35 @@ public class ModelClient {
                 }
                 OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(modelName);
 
-                // Add RAG context from embeddings if enabled
-                List<String> ragContext = new ArrayList<>();
+                // Transform chat history into OllamaChatMessage objects
+                List<OllamaChatMessage> historyMessages = chatHistory.stream()
+                        .map(entry -> new OllamaChatMessage(
+                                entry.getRole().equalsIgnoreCase("user") ? OllamaChatMessageRole.USER : OllamaChatMessageRole.ASSISTANT,
+                                entry.getChunk()
+                        ))
+                        .collect(Collectors.toList());
 
-                if (useChatEmbeddings) {
-                    ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", null, new Date());
-                    List<ChatChunkEmbedding> userEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
-                    if (!userEmbeddings.isEmpty()) {
-                        List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
-                                userEmbeddings.get(0), SIMILAR_CHAT_CHUNK_LIMIT); // Get top 5 similar chat chunks
-                        for (ChatChunkEmbedding similar : similarChats) {
-                            if (similar.getSimilarity() >= MIN_SIMILARITY_SCORE) {
-                                ragContext.add("Chat history: " + similar.getChunk());
-                            }
-                        }
-                    }
+                if (!systemPrompt.isEmpty()) {
+                    // The system prompt will not be shown to the user, but the first message will be
+                    OllamaChatRequest requestModel = builder.withMessage(OllamaChatMessageRole.SYSTEM, systemPrompt)
+                            .build();
+
+                    // Start conversation with model
+                    OllamaChatResult chatResult = ollamaAPI.chat(requestModel);
+                    OllamaChatMessage firstMessage = chatResult.getChatHistory().getFirst();
+
+                    // Prepend firstMessage to historyMessages
+                    List<OllamaChatMessage> updatedHistoryMessages = new ArrayList<>();
+                    updatedHistoryMessages.add(firstMessage);
+                    updatedHistoryMessages.addAll(historyMessages);
+                    historyMessages = updatedHistoryMessages;
                 }
 
-                if (useTextEmbeddings) {
-                    List<TextEmbedding> userTextEmbeddings = textEmbeddingManager.generateEmbeddings(userMessage);
-                    if (!userTextEmbeddings.isEmpty()) {
-                        List<TextEmbedding> similarTexts = textEmbeddingManager.findSimilarEmbeddings(
-                                userTextEmbeddings.get(0), 5); // Get top 5 similar text chunks
-                        for (TextEmbedding similar : similarTexts) {
-                            ragContext.add("Knowledge: " + similar.getChunk());
-                        }
-                    }
-                }
+
+                List<String> ragContext = getRagContext(userMessage, useChatEmbeddings);
+
+                getKnowledgeContext(userMessage, useTextEmbeddings, ragContext);
+
 
                 if (!ragContext.isEmpty()) {
                     String contextMessage = "Relevant information:\n" + String.join("\n\n", ragContext);
@@ -163,6 +158,39 @@ public class ModelClient {
             }
         }
         return null; // This line should never be reached
+    }
+
+    private void getKnowledgeContext(String userMessage, boolean useTextEmbeddings, List<String> ragContext) throws EmbeddingGenerationException {
+        if (useTextEmbeddings) {
+            List<TextEmbedding> userTextEmbeddings = textEmbeddingManager.generateEmbeddings(userMessage);
+            if (!userTextEmbeddings.isEmpty()) {
+                List<TextEmbedding> similarTexts = textEmbeddingManager.findSimilarEmbeddings(
+                        userTextEmbeddings.get(0), 3);
+                for (TextEmbedding similar : similarTexts) {
+                    ragContext.add("Knowledge: " + similar.getChunk());
+                }
+            }
+        }
+    }
+
+    private List<String> getRagContext(String userMessage, boolean useChatEmbeddings) throws EmbeddingGenerationException {
+        // Add RAG context from embeddings if enabled
+        List<String> ragContext = new ArrayList<>();
+
+        if (useChatEmbeddings) {
+            ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", null, new Date());
+            List<ChatChunkEmbedding> userEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
+            if (!userEmbeddings.isEmpty()) {
+                List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
+                        userEmbeddings.get(0), SIMILAR_CHAT_CHUNK_LIMIT); // Get top 5 similar chat chunks
+                for (ChatChunkEmbedding similar : similarChats) {
+                    if (similar.getSimilarity() >= MIN_SIMILARITY_SCORE) {
+                        ragContext.add("Chat history: " + similar.getChunk());
+                    }
+                }
+            }
+        }
+        return ragContext;
     }
 
     /**

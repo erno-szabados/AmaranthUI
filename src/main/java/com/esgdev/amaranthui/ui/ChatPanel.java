@@ -5,6 +5,7 @@ import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ public class ChatPanel extends JPanel {
     private final JButton sendButton;
     private final JCheckBox chatEmbeddingsCheckbox;
     private final JCheckBox textEmbeddingsCheckbox;
+    private final JTextArea systemPromptTextArea;
 
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
@@ -36,6 +38,16 @@ public class ChatPanel extends JPanel {
         chatList.setCellRenderer(new ChatEntryRenderer());
         chatList.setFixedCellHeight(-1); // Enable variable row heights
 
+        JPanel systemPromptPanel = new JPanel(new BorderLayout());
+        systemPromptTextArea = new JTextArea();
+        systemPromptTextArea.setLineWrap(true);
+        systemPromptTextArea.setRows(3);
+        systemPromptTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        systemPromptPanel.add(new JLabel("System Prompt:"), BorderLayout.NORTH);
+        systemPromptPanel.add(systemPromptTextArea, BorderLayout.CENTER);
+        systemPromptPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        add(systemPromptPanel, BorderLayout.NORTH);
+
         // Add the JList to a scroll pane
         JScrollPane scrollPane = new JScrollPane(chatList);
         add(scrollPane, BorderLayout.CENTER);
@@ -48,7 +60,8 @@ public class ChatPanel extends JPanel {
         // Create the spinner
         spinner = new JProgressBar();
         spinner.setIndeterminate(true);
-        spinner.setVisible(false); // Initially hidden
+        spinner.setValue(0);
+        spinner.setVisible(false);
 
         // Add spinner, input field, and button to the input panel
         inputPanel.add(spinner, BorderLayout.WEST);
@@ -94,6 +107,7 @@ public class ChatPanel extends JPanel {
 
                     // Send the user message to the ModelClient and get the response
                     String response = modelClient.sendChatRequest(
+                            systemPromptTextArea.getText(),
                             userEntry.getChunk(),
                             useChatEmbeddings,
                             useTextEmbeddings
