@@ -41,6 +41,7 @@ public class ModelClientIntegrationTest {
         //textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));
     }
 
+    @Ignore("This test requires a running Ollama API service.")
     @Test
     public void testAddChatEntry() throws Exception {
         // Create a ChatEntry
@@ -81,6 +82,7 @@ public class ModelClientIntegrationTest {
         assertFalse(response.isEmpty());
     }
 
+    @Ignore("This test requires a running Ollama API service.")
     @Test
     public void testProcessTextEmbeddings() throws Exception {
         // Process a text

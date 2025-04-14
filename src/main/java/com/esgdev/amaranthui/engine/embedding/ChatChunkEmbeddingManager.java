@@ -58,7 +58,9 @@ public class ChatChunkEmbeddingManager implements EmbeddingManagerInterface<Chat
                         chatEntry.getConversationId(),
                         chatEntry.getUserId(),
                         chatEntry.getRole(),
-                        chatEntry.getReplyToChunkId()
+                        chatEntry.getReplyToChunkId(),
+                        configuration.getEmbeddingModel(), // Set embedding model
+                        0.0 // Default similarity value
                 ));
             }
 

@@ -46,7 +46,15 @@ public class TextEmbeddingManager implements EmbeddingManagerInterface<TextEmbed
             List<TextEmbedding> textEmbeddings = new ArrayList<>();
 
             for (int i = 0; i < chunks.size(); i++) {
-                textEmbeddings.add(new TextEmbedding(chunks.get(i), embeddings.get(i), new Date(), new Date()));
+                // Use the embedding model from the configuration and set similarity to 0.0 (default)
+                textEmbeddings.add(new TextEmbedding(
+                    chunks.get(i),
+                    embeddings.get(i),
+                    new Date(),
+                    new Date(),
+                    configuration.getEmbeddingModel(),
+                    0.0 // Default similarity value
+                ));
             }
 
             logger.info("Embeddings generated successfully for all chunks.");

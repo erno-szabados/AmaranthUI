@@ -7,6 +7,7 @@ import com.esgdev.amaranthui.engine.embedding.*;
 import io.github.ollama4j.OllamaAPI;
 
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * DependencyFactory is responsible for creating and managing dependencies used in the application.
@@ -19,6 +20,7 @@ public class DependencyFactory {
     private static final EmbeddingDao<TextEmbedding> textEmbeddingDao;
     private static final EmbeddingConfiguration embeddingConfiguration;
     private static final ChatConfiguration chatConfiguration;
+    private static final Logger logger = Logger.getLogger(DependencyFactory.class.getName());
 
     static {
         try {
@@ -40,6 +42,12 @@ public class DependencyFactory {
 
             int chatHistorySize = Integer.parseInt(properties.getProperty("chat_history_size", "10"));
             String chatModel = properties.getProperty("chat_model", "gemma3:1b");
+            logger.info("Chat model: " + chatModel);
+            logger.info("Chat history size: " + chatHistorySize);
+            logger.info("Chunk size: " + chunkSize);
+            logger.info("Overlap: " + overlap);
+            logger.info("Embedding model: " + embeddingModel);
+            
 
             // Create EmbeddingConfiguration
             embeddingConfiguration = new EmbeddingConfiguration(chunkSize, overlap, embeddingModel, jdbcUrl, jdbcUser, jdbcPassword);
@@ -75,4 +83,8 @@ public class DependencyFactory {
         // Load chat history size from properties or return a default value
         return chatConfiguration.getChatHistorySize();
     }
+
+    public static ChatConfiguration getChatConfiguration() {
+        return chatConfiguration;
+    }   
 }

@@ -19,6 +19,8 @@ public class MainFrame extends JFrame {
 
         // Create the JTabbedPane
         JTabbedPane tabbedPane = new JTabbedPane();
+        setMinimumSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(800, 600));
 
         // Add the ChatPanel as the first tab
         ChatPanel chatPanel = new ChatPanel(modelClient);
@@ -32,7 +34,8 @@ public class MainFrame extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        pack();
+        setVisible(true);
         setLocationRelativeTo(null);
     }
 }

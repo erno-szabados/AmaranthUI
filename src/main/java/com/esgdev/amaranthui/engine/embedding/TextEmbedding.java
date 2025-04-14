@@ -13,16 +13,20 @@ public class TextEmbedding {
     private List<Double> embedding;
     private Date creationDate;
     private Date lastAccessed;
+    private String embeddingModel; // Metadata: embedding model name
+    private double similarity; // Metadata: similarity score
 
     // Constructors, getters, setters
     public TextEmbedding() {
     }
 
-    public TextEmbedding(String chunk, List<Double> embedding, Date creationDate, Date lastAccessed) {
+    public TextEmbedding(String chunk, List<Double> embedding, Date creationDate, Date lastAccessed, String embeddingModel, double similarity) {
         this.chunk = chunk;
         this.embedding = embedding;
         this.creationDate = creationDate;
         this.lastAccessed = lastAccessed;
+        this.embeddingModel = embeddingModel;
+        this.similarity = similarity;
     }
 
     public Long getId() {
@@ -63,5 +67,21 @@ public class TextEmbedding {
 
     public void setLastAccessed(Date lastAccessed) {
         this.lastAccessed = lastAccessed;
+    }
+
+    public String getEmbeddingModel() {
+        return embeddingModel;
+    }
+
+    public void setEmbeddingModel(String embeddingModel) {
+        this.embeddingModel = embeddingModel;
+    }
+
+    public double getSimilarity() {
+        return similarity;
+    }
+
+    public void setSimilarity(double similarity) {
+        this.similarity = similarity;
     }
 }

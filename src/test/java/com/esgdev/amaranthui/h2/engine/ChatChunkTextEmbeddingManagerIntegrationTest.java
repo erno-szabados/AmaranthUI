@@ -75,7 +75,9 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 1L,
                 "user",
-                null
+                null,
+                "curren t-model", // Embedding model
+                0.0 // Similarity
         );
 
         // Save embedding
@@ -103,7 +105,9 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 1L,
                 "user",
-                null
+                null,
+                "current-model", // Embedding model
+                0.0 // Similarity
         );
         List<ChatChunkEmbedding> embeddings = new ArrayList<>();
         embeddings.add(embedding);
@@ -116,5 +120,46 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
         assertNotNull(similarEmbeddings);
         assertFalse(similarEmbeddings.isEmpty());
         assertEquals(embedding.getChunk(), similarEmbeddings.get(0).getChunk());
+    }
+
+    @Test
+    public void testFindSimilarEmbeddingsWithModelFilter() {
+        // Create and save embeddings with the current model
+        ChatChunkEmbedding embedding = new ChatChunkEmbedding(
+                "Hello, how are you?",
+                new ArrayList<>(), // Dummy embedding
+                new Date(),
+                new Date(),
+                1L,
+                1L,
+                "user",
+                null,
+                "current-model",
+                0.0
+        );
+        chatChunkEmbeddingManager.saveEmbeddings(List.of(embedding));
+
+        // Create and save embeddings with a different model
+        ChatChunkEmbedding differentModelEmbedding = new ChatChunkEmbedding(
+                "Different text",
+                new ArrayList<>(), // Dummy embedding
+                new Date(),
+                new Date(),
+                1L,
+                1L,
+                "user",
+                null,
+                "different-model",
+                0.0
+        );
+        chatChunkEmbeddingManager.saveEmbeddings(List.of(differentModelEmbedding));
+
+        // Find similar embeddings using the current model
+        List<ChatChunkEmbedding> similarEmbeddings = chatChunkEmbeddingManager.findSimilarEmbeddings(embedding, 5);
+
+        // Assertions
+        assertNotNull(similarEmbeddings);
+        assertFalse(similarEmbeddings.isEmpty());
+        assertTrue(similarEmbeddings.stream().allMatch(e -> e.getEmbeddingModel().equals(embedding.getEmbeddingModel())));
     }
 }

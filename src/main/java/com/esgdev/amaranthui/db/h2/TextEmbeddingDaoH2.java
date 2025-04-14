@@ -38,7 +38,9 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                     chunk VARCHAR NOT NULL,
                     embedding DOUBLE ARRAY NOT NULL,
                     creation_date TIMESTAMP NOT NULL,
-                    last_accessed TIMESTAMP NOT NULL
+                    last_accessed TIMESTAMP NOT NULL,
+                    embedding_model VARCHAR NOT NULL,
+                    similarity DOUBLE NOT NULL
                 );
                 """;
         try (Connection conn = getConnection();
@@ -103,7 +105,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
 
     @Override
     public void addEmbedding(List<TextEmbedding> embeddings) {
-        String sql = "INSERT INTO embeddings (chunk, embedding, creation_date, last_accessed) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO embeddings (chunk, embedding, creation_date, last_accessed, embedding_model, similarity) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             for (TextEmbedding embedding : embeddings) {
@@ -111,24 +113,27 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
                 stmt.setTimestamp(3, new java.sql.Timestamp(embedding.getCreationDate().getTime()));
                 stmt.setTimestamp(4, new java.sql.Timestamp(embedding.getLastAccessed().getTime()));
+                stmt.setString(5, embedding.getEmbeddingModel());
+                stmt.setDouble(6, embedding.getSimilarity());
                 stmt.addBatch();
             }
             stmt.executeBatch();
         } catch (SQLException e) {
-            logger.log(java.util.logging.Level.SEVERE, "Failed to add embeddings", e); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to add embeddings", e);
         }
     }
 
-
     @Override
     public void updateEmbedding(TextEmbedding embedding) {
-        String sql = "UPDATE embeddings SET chunk = ?, embedding = ?, last_accessed = ? WHERE id = ?";
+        String sql = "UPDATE embeddings SET chunk = ?, embedding = ?, last_accessed = ?, embedding_model = ?, similarity = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, embedding.getChunk());
             stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
-            stmt.setDate(3, new java.sql.Date(embedding.getLastAccessed().getTime()));
-            stmt.setLong(4, embedding.getId());
+            stmt.setTimestamp(3, new java.sql.Timestamp(embedding.getLastAccessed().getTime()));
+            stmt.setString(4, embedding.getEmbeddingModel());
+            stmt.setDouble(5, embedding.getSimilarity());
+            stmt.setLong(6, embedding.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);// Handle exceptions properly
@@ -154,6 +159,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                     SELECT id, chunk, embedding, creation_date, last_accessed,
                            COSINE_SIMILARITY(embedding, ?) AS similarity
                     FROM embeddings
+                    WHERE embedding_model = ? -- Filter by the current embedding model
                 )
                 SELECT id, chunk, embedding, creation_date, last_accessed
                 FROM Similarities
@@ -165,10 +171,11 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
         List<TextEmbedding> similarEmbeddings = new ArrayList<>();
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            // Convert targetEmbedding to SQL array
+            // Convert sourceEmbedding's embedding to SQL array
             Array embeddingArray = conn.createArrayOf("DOUBLE", sourceEmbedding.getEmbedding().toArray());
             stmt.setObject(1, embeddingArray);
-            stmt.setInt(2, limit);
+            stmt.setString(2, sourceEmbedding.getEmbeddingModel()); // Set the embedding model filter
+            stmt.setInt(3, limit);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -176,7 +183,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 }
             }
         } catch (SQLException e) {
-            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e);// Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e);
         }
         return similarEmbeddings;
     }
@@ -198,6 +205,8 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
         }
         embedding.setCreationDate(rs.getTimestamp("creation_date"));
         embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
+        embedding.setEmbeddingModel(rs.getString("embedding_model"));
+        embedding.setSimilarity(rs.getDouble("similarity"));
 
         return embedding;
     }

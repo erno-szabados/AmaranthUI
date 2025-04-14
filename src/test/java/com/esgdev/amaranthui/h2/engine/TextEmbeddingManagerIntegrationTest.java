@@ -4,6 +4,7 @@ import com.esgdev.amaranthui.engine.DependencyFactory;
 import com.esgdev.amaranthui.db.EmbeddingDao;
 import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
 import com.esgdev.amaranthui.engine.embedding.TextEmbeddingManager;
+import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 /**
  * Integration test for the EmbeddingManager class.

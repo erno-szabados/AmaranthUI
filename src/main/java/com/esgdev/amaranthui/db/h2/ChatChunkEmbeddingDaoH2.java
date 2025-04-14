@@ -34,6 +34,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                     embedding DOUBLE ARRAY NOT NULL,
                     creation_date TIMESTAMP NOT NULL,
                     last_accessed TIMESTAMP NOT NULL,
+                    embedding_model VARCHAR NOT NULL,
+                    similarity DOUBLE NOT NULL,
                     conversation_id BIGINT,
                     user_id BIGINT,
                     role VARCHAR,
@@ -52,8 +54,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
     public void addEmbedding(ChatChunkEmbedding embedding) {
         String sql = """
                 INSERT INTO chat_chunk_embeddings 
-                (chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                (chunk, embedding, creation_date, last_accessed, embedding_model, similarity, conversation_id, user_id, role, reply_to_chunk_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """;
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -61,10 +63,12 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
             stmt.setTimestamp(3, new Timestamp(embedding.getCreationDate().getTime()));
             stmt.setTimestamp(4, new Timestamp(embedding.getLastAccessed().getTime()));
-            stmt.setObject(5, embedding.getConversationId());
-            stmt.setObject(6, embedding.getUserId());
-            stmt.setString(7, embedding.getRole());
-            stmt.setObject(8, embedding.getReplyToChunkId());
+            stmt.setString(5, embedding.getEmbeddingModel());
+            stmt.setDouble(6, embedding.getSimilarity());
+            stmt.setObject(7, embedding.getConversationId());
+            stmt.setObject(8, embedding.getUserId());
+            stmt.setString(9, embedding.getRole());
+            stmt.setObject(10, embedding.getReplyToChunkId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.log(java.util.logging.Level.SEVERE, "Failed to add embedding", e);
@@ -75,8 +79,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
     public void addEmbedding(List<ChatChunkEmbedding> embeddings) {
         String sql = """
                 INSERT INTO chat_chunk_embeddings
-                (chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                (chunk, embedding, creation_date, last_accessed, embedding_model, similarity, conversation_id, user_id, role, reply_to_chunk_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """;
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -85,10 +89,12 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                 stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
                 stmt.setTimestamp(3, new Timestamp(embedding.getCreationDate().getTime()));
                 stmt.setTimestamp(4, new Timestamp(embedding.getLastAccessed().getTime()));
-                stmt.setObject(5, embedding.getConversationId());
-                stmt.setObject(6, embedding.getUserId());
-                stmt.setString(7, embedding.getRole());
-                stmt.setObject(8, embedding.getReplyToChunkId());
+                stmt.setString(5, embedding.getEmbeddingModel()); // Set embedding model
+                stmt.setDouble(6, embedding.getSimilarity()); // Set similarity
+                stmt.setObject(7, embedding.getConversationId());
+                stmt.setObject(8, embedding.getUserId());
+                stmt.setString(9, embedding.getRole());
+                stmt.setObject(10, embedding.getReplyToChunkId());
                 stmt.addBatch();
             }
             stmt.executeBatch();
@@ -101,7 +107,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
     public void updateEmbedding(ChatChunkEmbedding embedding) {
         String sql = """
                 UPDATE chat_chunk_embeddings 
-                SET chunk = ?, embedding = ?, last_accessed = ?, conversation_id = ?, user_id = ?, role = ?, reply_to_chunk_id = ? 
+                SET chunk = ?, embedding = ?, last_accessed = ?, embedding_model = ?, similarity = ?, 
+                    conversation_id = ?, user_id = ?, role = ?, reply_to_chunk_id = ? 
                 WHERE id = ?;
                 """;
         try (Connection conn = getConnection();
@@ -109,11 +116,13 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             stmt.setString(1, embedding.getChunk());
             stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
             stmt.setTimestamp(3, new Timestamp(embedding.getLastAccessed().getTime()));
-            stmt.setObject(4, embedding.getConversationId());
-            stmt.setObject(5, embedding.getUserId());
-            stmt.setString(6, embedding.getRole());
-            stmt.setObject(7, embedding.getReplyToChunkId());
-            stmt.setLong(8, embedding.getId());
+            stmt.setString(4, embedding.getEmbeddingModel());
+            stmt.setDouble(5, embedding.getSimilarity());
+            stmt.setObject(6, embedding.getConversationId());
+            stmt.setObject(7, embedding.getUserId());
+            stmt.setString(8, embedding.getRole());
+            stmt.setObject(9, embedding.getReplyToChunkId());
+            stmt.setLong(10, embedding.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);
@@ -136,11 +145,12 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
     public List<ChatChunkEmbedding> findEmbeddingsNear(ChatChunkEmbedding sourceEmbedding, int limit) {
         String sql = """
                 WITH Similarities AS (
-                    SELECT id, chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id,
+                    SELECT id, chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id, embedding_model,
                            COSINE_SIMILARITY(embedding, ?) AS similarity
                     FROM chat_chunk_embeddings
+                    WHERE embedding_model = ? -- Filter by the current embedding model
                 )
-                SELECT id, chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id
+                SELECT id, chunk, embedding, creation_date, last_accessed, conversation_id, user_id, role, reply_to_chunk_id, embedding_model, similarity
                 FROM Similarities
                 WHERE similarity IS NOT NULL
                 ORDER BY similarity DESC
@@ -153,7 +163,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
             // Convert sourceEmbedding's embedding to SQL array
             Array embeddingArray = conn.createArrayOf("DOUBLE", sourceEmbedding.getEmbedding().toArray());
             stmt.setObject(1, embeddingArray);
-            stmt.setInt(2, limit);
+            stmt.setString(2, sourceEmbedding.getEmbeddingModel()); // Set the embedding model filter
+            stmt.setInt(3, limit);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -161,7 +172,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
                 }
             }
         } catch (SQLException e) {
-            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e); // Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to find similar embeddings", e);
         }
         return similarEmbeddings;
     }
@@ -214,6 +225,8 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
         }
         embedding.setCreationDate(rs.getTimestamp("creation_date"));
         embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
+        embedding.setEmbeddingModel(rs.getString("embedding_model"));
+        embedding.setSimilarity(rs.getDouble("similarity"));
         embedding.setConversationId(rs.getLong("conversation_id"));
         embedding.setUserId(rs.getLong("user_id"));
         embedding.setRole(rs.getString("role"));

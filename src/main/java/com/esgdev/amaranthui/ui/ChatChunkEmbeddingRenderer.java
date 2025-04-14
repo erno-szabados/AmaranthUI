@@ -30,11 +30,13 @@ public class ChatChunkEmbeddingRenderer extends JTextArea implements ListCellRen
         if (value != null) {
             // Build the display text with metadata and chunk content
             String metadata = String.format(
-                    "Conversation ID: %d, User ID: %d, Role: %s, Reply To: %d",
+                    "Conversation ID: %d, User ID: %d, Role: %s, Reply To: %d, Embedding Model: %s, Similarity: %.2f",
                     value.getConversationId(),
                     value.getUserId(),
                     value.getRole(),
-                    value.getReplyToChunkId() != null ? value.getReplyToChunkId() : -1
+                    value.getReplyToChunkId() != null ? value.getReplyToChunkId() : -1,
+                    value.getEmbeddingModel(),
+                    value.getSimilarity()
             );
             String content = value.getChunk();
 

@@ -19,20 +19,23 @@ public class ChatChunkEmbedding extends TextEmbedding {
     }
 
     /**
-     * Constructor for ChatChunkEmbedding.
+     * Constructor for ChatChunkEmbedding with additional fields.
      *
      * @param chunk          The text chunk.
      * @param embedding      The embedding vector.
      * @param creationDate   The date of creation.
      * @param lastAccessed   The date of last access.
      * @param conversationId The ID of the conversation this chunk belongs to.
-     * @param userId        The ID of the user who created this chunk.
-     * @param role          The role of the user ('user' or 'model').
+     * @param userId         The ID of the user who created this chunk.
+     * @param role           The role of the user ('user' or 'model').
      * @param replyToChunkId The ID of the chunk this chunk is a response to.
+     * @param embeddingModel The model used for embedding.
+     * @param similarity     The similarity score.
      */
     public ChatChunkEmbedding(String chunk, List<Double> embedding, Date creationDate, Date lastAccessed,
-                              Long conversationId, Long userId, String role, Long replyToChunkId) {
-        super(chunk, embedding, creationDate, lastAccessed); // Call the superclass constructor
+                              Long conversationId, Long userId, String role, Long replyToChunkId,
+                              String embeddingModel, double similarity) {
+        super(chunk, embedding, creationDate, lastAccessed, embeddingModel, similarity); // Pass new fields to superclass
         this.conversationId = conversationId;
         this.userId = userId;
         this.role = role;

@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 public class ModelClient {
     private static final int MAX_RETRIES = 3; // Maximum number of retries
     private static final int BASE_RETRY_INTERVAL_MS = 2000; // Base retry interval in milliseconds
+    private static final int REQUEST_TIMEOUT_S = 120; // Request timeout in milliseconds
+    private static final double MIN_SIMILARITY_SCORE = 0.2; // Minimum similarity score threshold
 
     private static final Logger logger = Logger.getLogger(ModelClient.class.getName());
     public static final int SIMILAR_CHAT_CHUNK_LIMIT = 10;
@@ -30,12 +32,15 @@ public class ModelClient {
     private final EmbeddingManagerInterface<ChatChunkEmbedding, ChatEntry> chatChunkEmbeddingManager;
     private final ChatHistory chatHistory;
     private final OllamaAPI ollamaAPI;
+    private final ChatConfiguration ChatConfiguration;
 
     public ModelClient() {
         this.ollamaAPI = DependencyFactory.getOllamaAPI();
+        this.ollamaAPI.setRequestTimeoutSeconds(REQUEST_TIMEOUT_S);
         this.textEmbeddingManager = DependencyFactory.createEmbeddingManager();
         this.chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
         this.chatHistory = new ChatHistory(DependencyFactory.getChatHistorySize());
+        this.ChatConfiguration = DependencyFactory.getChatConfiguration();
     }
 
     public void addChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
@@ -82,7 +87,11 @@ public class ModelClient {
                         .collect(Collectors.toList());
 
                 // Create a request builder
-                OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance("gemma3:1b");
+                String modelName = ChatConfiguration.getChatModel();
+                if (modelName == null || modelName.isEmpty()) {
+                    throw new IllegalArgumentException("Chat model name cannot be null or empty.");
+                }
+                OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(modelName);
 
                 // Add RAG context from embeddings if enabled
                 List<String> ragContext = new ArrayList<>();
@@ -94,7 +103,9 @@ public class ModelClient {
                         List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
                                 userEmbeddings.get(0), SIMILAR_CHAT_CHUNK_LIMIT); // Get top 5 similar chat chunks
                         for (ChatChunkEmbedding similar : similarChats) {
-                            ragContext.add("Chat history: " + similar.getChunk());
+                            if (similar.getSimilarity() >= MIN_SIMILARITY_SCORE) {
+                                ragContext.add("Chat history: " + similar.getChunk());
+                            }
                         }
                     }
                 }
