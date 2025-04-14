@@ -2,6 +2,7 @@ package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.*;
 import com.esgdev.amaranthui.db.h2.ChatChunkEmbeddingDaoH2;
+import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
 import com.esgdev.amaranthui.db.h2.TextEmbeddingDaoH2;
 import com.esgdev.amaranthui.engine.embedding.*;
 import io.github.ollama4j.OllamaAPI;
@@ -86,5 +87,13 @@ public class DependencyFactory {
 
     public static EmbeddingDao<ChatChunkEmbedding> getChatChunkEmbeddingDao() {
         return chatChunkEmbeddingDao;
+    }
+
+    public static KeyValueStoreDaoH2 getKeyValueStoreDao() {
+        return new KeyValueStoreDaoH2(
+                embeddingConfiguration.getJdbcUrl(),
+                embeddingConfiguration.getJdbcUser(),
+                embeddingConfiguration.getJdbcPassword()
+        );
     }
 }

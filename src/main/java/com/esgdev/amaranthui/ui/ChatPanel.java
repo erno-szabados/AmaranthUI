@@ -43,6 +43,26 @@ public class ChatPanel extends JPanel {
         systemPromptTextArea.setLineWrap(true);
         systemPromptTextArea.setRows(3);
         systemPromptTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        // Inside the ChatPanel constructor, after initializing systemPromptTextArea
+        JButton savePromptButton = new JButton("Save");
+        savePromptButton.addActionListener(e -> {
+            String prompt = systemPromptTextArea.getText().trim();
+            boolean success = modelClient.saveSystemPrompt(prompt);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "System prompt saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to save system prompt.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        // Add the save button to the systemPromptPanel
+        systemPromptPanel.add(savePromptButton, BorderLayout.SOUTH);
+
+        // Load the system prompt when the app starts
+        String loadedPrompt = modelClient.loadSystemPrompt();
+        if (loadedPrompt != null) {
+            systemPromptTextArea.setText(loadedPrompt);
+        }
         systemPromptPanel.add(new JLabel("System Prompt:"), BorderLayout.NORTH);
         systemPromptPanel.add(systemPromptTextArea, BorderLayout.CENTER);
         systemPromptPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));

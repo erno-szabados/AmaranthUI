@@ -1,5 +1,6 @@
 package com.esgdev.amaranthui.engine;
 
+import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
 import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingManagerInterface;
@@ -33,6 +34,8 @@ public class ModelClient {
     private final ChatHistory chatHistory;
     private final OllamaAPI ollamaAPI;
     private final ChatConfiguration ChatConfiguration;
+    private static final String SYSTEM_PROMPT_KEY = "system_prompt";
+    private final KeyValueStoreDaoH2 keyValueStoreDao;
 
     public ModelClient() {
         this.ollamaAPI = DependencyFactory.getOllamaAPI();
@@ -41,6 +44,7 @@ public class ModelClient {
         this.chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
         this.chatHistory = new ChatHistory(DependencyFactory.getChatConfiguration().getChatHistorySize());
         this.ChatConfiguration = DependencyFactory.getChatConfiguration();
+        this.keyValueStoreDao = DependencyFactory.getKeyValueStoreDao();
     }
 
     public void addChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
@@ -216,5 +220,13 @@ public class ModelClient {
         List<TextEmbedding> embeddings = textEmbeddingManager.generateEmbeddings(text);
         textEmbeddingManager.saveEmbeddings(embeddings);
         logger.info("Text embeddings processed and saved successfully.");
+    }
+
+    public boolean saveSystemPrompt(String prompt) {
+        return keyValueStoreDao.saveValue(SYSTEM_PROMPT_KEY, prompt);
+    }
+
+    public String loadSystemPrompt() {
+        return keyValueStoreDao.getValue(SYSTEM_PROMPT_KEY);
     }
 }
