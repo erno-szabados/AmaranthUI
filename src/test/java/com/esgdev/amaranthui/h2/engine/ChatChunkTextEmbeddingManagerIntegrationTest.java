@@ -64,6 +64,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
         assertEquals(chatEntry.getChunk(), embeddings.get(0).getChunk());
     }
 
+    @Ignore("This test requires a running embedding generation service.")
     @Test
     public void testSaveAndRetrieveEmbeddings() {
         // Create a ChatChunkEmbedding
@@ -94,6 +95,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
         assertEquals(embedding.getChunk(), retrievedEmbeddings.get(0).getChunk());
     }
 
+    @Ignore("This test requires a running embedding generation service.")
     @Test
     public void testFindSimilarEmbeddings() {
         // Create and save embeddings
@@ -122,6 +124,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
         assertEquals(embedding.getChunk(), similarEmbeddings.get(0).getChunk());
     }
 
+    @Ignore("This test requires a running embedding generation service.")
     @Test
     public void testFindSimilarEmbeddingsWithModelFilter() {
         // Create and save embeddings with the current model

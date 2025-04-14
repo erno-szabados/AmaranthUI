@@ -39,8 +39,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                     embedding DOUBLE ARRAY NOT NULL,
                     creation_date TIMESTAMP NOT NULL,
                     last_accessed TIMESTAMP NOT NULL,
-                    embedding_model VARCHAR NOT NULL,
-                    similarity DOUBLE NOT NULL
+                    embedding_model VARCHAR NOT NULL
                 );
                 """;
         try (Connection conn = getConnection();
@@ -105,7 +104,7 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
 
     @Override
     public void addEmbedding(List<TextEmbedding> embeddings) {
-        String sql = "INSERT INTO embeddings (chunk, embedding, creation_date, last_accessed, embedding_model, similarity) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO embeddings (chunk, embedding, creation_date, last_accessed, embedding_model) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             for (TextEmbedding embedding : embeddings) {
@@ -114,7 +113,6 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
                 stmt.setTimestamp(3, new java.sql.Timestamp(embedding.getCreationDate().getTime()));
                 stmt.setTimestamp(4, new java.sql.Timestamp(embedding.getLastAccessed().getTime()));
                 stmt.setString(5, embedding.getEmbeddingModel());
-                stmt.setDouble(6, embedding.getSimilarity());
                 stmt.addBatch();
             }
             stmt.executeBatch();
@@ -125,18 +123,17 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
 
     @Override
     public void updateEmbedding(TextEmbedding embedding) {
-        String sql = "UPDATE embeddings SET chunk = ?, embedding = ?, last_accessed = ?, embedding_model = ?, similarity = ? WHERE id = ?";
+        String sql = "UPDATE embeddings SET chunk = ?, embedding = ?, last_accessed = ?, embedding_model = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, embedding.getChunk());
             stmt.setArray(2, conn.createArrayOf("DOUBLE", embedding.getEmbedding().toArray()));
             stmt.setTimestamp(3, new java.sql.Timestamp(embedding.getLastAccessed().getTime()));
             stmt.setString(4, embedding.getEmbeddingModel());
-            stmt.setDouble(5, embedding.getSimilarity());
-            stmt.setLong(6, embedding.getId());
+            stmt.setLong(5, embedding.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);// Handle exceptions properly
+            logger.log(java.util.logging.Level.SEVERE, "Failed to update embeddings", e);
         }
     }
 
@@ -156,12 +153,12 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
     public List<TextEmbedding> findEmbeddingsNear(TextEmbedding sourceEmbedding, int limit) {
         String sql = """
                 WITH Similarities AS (
-                    SELECT id, chunk, embedding, creation_date, last_accessed,
+                    SELECT id, chunk, embedding, creation_date, last_accessed, embedding_model,
                            COSINE_SIMILARITY(embedding, ?) AS similarity
                     FROM embeddings
                     WHERE embedding_model = ? -- Filter by the current embedding model
                 )
-                SELECT id, chunk, embedding, creation_date, last_accessed
+                SELECT id, chunk, embedding, creation_date, last_accessed, embedding_model, similarity
                 FROM Similarities
                 WHERE similarity IS NOT NULL
                 ORDER BY similarity DESC
@@ -206,8 +203,6 @@ public class TextEmbeddingDaoH2 implements EmbeddingDao<TextEmbedding> {
         embedding.setCreationDate(rs.getTimestamp("creation_date"));
         embedding.setLastAccessed(rs.getTimestamp("last_accessed"));
         embedding.setEmbeddingModel(rs.getString("embedding_model"));
-        embedding.setSimilarity(rs.getDouble("similarity"));
-
         return embedding;
     }
 }
