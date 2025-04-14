@@ -26,7 +26,7 @@ public class ModelClientIntegrationTest {
     public void setUp() {
         // Initialize ModelClient and real dependencies
         modelClient = new ModelClient();
-        chatChunkEmbeddingDao = DependencyFactory.createChatChunkEmbeddingManager().getChatChunkEmbeddingDao();
+        chatChunkEmbeddingDao = DependencyFactory.createChatChunkEmbeddingManager().getEmbeddingDao();
         textEmbeddingDao = DependencyFactory.getTextEmbeddingDao();
 
         // Clean up database before each test

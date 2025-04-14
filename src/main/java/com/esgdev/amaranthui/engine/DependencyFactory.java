@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 /**
  * DependencyFactory is responsible for creating and managing dependencies used in the application.
- * It initializes the OllamaAPI, EmbeddingDao, and other configurations.
+ * It initializes the OllamaAPI, EmbeddingDao instances, and other configurations.
  * This is a lightweight dependency injection mechanism.
  */
 public class DependencyFactory {
@@ -21,6 +21,7 @@ public class DependencyFactory {
     private static final EmbeddingConfiguration embeddingConfiguration;
     private static final ChatConfiguration chatConfiguration;
     private static final Logger logger = Logger.getLogger(DependencyFactory.class.getName());
+    private static EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao;
 
     static {
         try {
@@ -47,7 +48,7 @@ public class DependencyFactory {
             logger.info("Chunk size: " + chunkSize);
             logger.info("Overlap: " + overlap);
             logger.info("Embedding model: " + embeddingModel);
-            
+
 
             // Create EmbeddingConfiguration
             embeddingConfiguration = new EmbeddingConfiguration(chunkSize, overlap, embeddingModel, jdbcUrl, jdbcUser, jdbcPassword);
@@ -63,28 +64,27 @@ public class DependencyFactory {
         return ollamaAPI;
     }
 
-    public static TextEmbeddingManager createEmbeddingManager() {
+    public static TextEmbeddingManager createTextEmbeddingManager() {
         return new TextEmbeddingManager(textEmbeddingDao, ollamaAPI, embeddingConfiguration);
+    }
+
+    public static ChatChunkEmbeddingManager createChatChunkEmbeddingManager() {
+        // Create an instance of ChatChunkEmbeddingDao (you may need to implement this if not already done)
+        chatChunkEmbeddingDao = new ChatChunkEmbeddingDaoH2(embeddingConfiguration);
+
+        // Return a new instance of ChatChunkEmbeddingManager
+        return new ChatChunkEmbeddingManager(chatChunkEmbeddingDao, ollamaAPI, embeddingConfiguration);
+    }
+
+    public static ChatConfiguration getChatConfiguration() {
+        return chatConfiguration;
     }
 
     public static EmbeddingDao<TextEmbedding> getTextEmbeddingDao() {
         return textEmbeddingDao;
     }
 
-    public static ChatChunkEmbeddingManager createChatChunkEmbeddingManager() {
-        // Create an instance of ChatChunkEmbeddingDao (you may need to implement this if not already done)
-        EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao = new ChatChunkEmbeddingDaoH2(embeddingConfiguration);
-
-        // Return a new instance of ChatChunkEmbeddingManager
-        return new ChatChunkEmbeddingManager(chatChunkEmbeddingDao, ollamaAPI, embeddingConfiguration);
+    public static EmbeddingDao<ChatChunkEmbedding> getChatChunkEmbeddingDao() {
+        return chatChunkEmbeddingDao;
     }
-
-    public static int getChatHistorySize() {
-        // Load chat history size from properties or return a default value
-        return chatConfiguration.getChatHistorySize();
-    }
-
-    public static ChatConfiguration getChatConfiguration() {
-        return chatConfiguration;
-    }   
 }

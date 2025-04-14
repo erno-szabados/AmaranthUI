@@ -29,7 +29,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
     @Before
     public void setUp() {
         // Initialize dependencies
-        chatChunkEmbeddingDao = DependencyFactory.createChatChunkEmbeddingManager().getChatChunkEmbeddingDao();
+        chatChunkEmbeddingDao = DependencyFactory.createChatChunkEmbeddingManager().getEmbeddingDao();
         chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
 
         // Clean database before each test

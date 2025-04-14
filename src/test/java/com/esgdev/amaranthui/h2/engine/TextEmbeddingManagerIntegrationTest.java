@@ -4,7 +4,6 @@ import com.esgdev.amaranthui.engine.DependencyFactory;
 import com.esgdev.amaranthui.db.EmbeddingDao;
 import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
 import com.esgdev.amaranthui.engine.embedding.TextEmbeddingManager;
-import com.esgdev.amaranthui.engine.embedding.EmbeddingConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -28,7 +27,7 @@ public class TextEmbeddingManagerIntegrationTest {
     public void setUp() {
         // Initialize dependencies
         textEmbeddingDao = DependencyFactory.getTextEmbeddingDao();
-        textEmbeddingManager = DependencyFactory.createEmbeddingManager();
+        textEmbeddingManager = DependencyFactory.createTextEmbeddingManager();
 
         // Clean database before each test
         textEmbeddingDao.getAllEmbeddings().forEach(embedding -> textEmbeddingDao.deleteEmbedding(embedding.getId()));

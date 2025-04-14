@@ -37,9 +37,9 @@ public class ModelClient {
     public ModelClient() {
         this.ollamaAPI = DependencyFactory.getOllamaAPI();
         this.ollamaAPI.setRequestTimeoutSeconds(REQUEST_TIMEOUT_S);
-        this.textEmbeddingManager = DependencyFactory.createEmbeddingManager();
+        this.textEmbeddingManager = DependencyFactory.createTextEmbeddingManager();
         this.chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
-        this.chatHistory = new ChatHistory(DependencyFactory.getChatHistorySize());
+        this.chatHistory = new ChatHistory(DependencyFactory.getChatConfiguration().getChatHistorySize());
         this.ChatConfiguration = DependencyFactory.getChatConfiguration();
     }
 
