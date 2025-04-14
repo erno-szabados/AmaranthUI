@@ -227,6 +227,7 @@ public class ChatChunkEmbeddingDaoH2 implements EmbeddingDao<ChatChunkEmbedding>
         embedding.setConversationId(rs.getLong("conversation_id"));
         embedding.setUserId(rs.getLong("user_id"));
         embedding.setRole(rs.getString("role"));
+        embedding.setSimilarity(rs.getDouble("similarity"));
         embedding.setReplyToChunkId(rs.getLong("reply_to_chunk_id"));
         return embedding;
     }
