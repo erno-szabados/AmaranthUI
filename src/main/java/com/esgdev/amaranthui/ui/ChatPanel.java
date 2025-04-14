@@ -66,11 +66,18 @@ public class ChatPanel extends JPanel {
         systemPromptPanel.add(new JLabel("System Prompt:"), BorderLayout.NORTH);
         systemPromptPanel.add(systemPromptTextArea, BorderLayout.CENTER);
         systemPromptPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-        add(systemPromptPanel, BorderLayout.NORTH);
 
         // Add the JList to a scroll pane
         JScrollPane scrollPane = new JScrollPane(chatList);
-        add(scrollPane, BorderLayout.CENTER);
+
+        // Wrap the systemPromptPanel and chat list in a JSplitPane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, systemPromptPanel, scrollPane);
+        splitPane.setResizeWeight(0.2); // Allocate initial space (20% for the system prompt)
+        splitPane.setOneTouchExpandable(true); // Add a toggle button for collapsing/expanding
+        splitPane.setDividerLocation(100); // Set initial divider location
+
+// Add the splitPane to the ChatPanel
+        add(splitPane, BorderLayout.CENTER);
 
         // Create the input panel
         JPanel inputPanel = new JPanel(new BorderLayout());
