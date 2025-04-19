@@ -5,6 +5,7 @@ import com.esgdev.amaranthui.db.h2.ChatChunkEmbeddingDaoH2;
 import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
 import com.esgdev.amaranthui.db.h2.TextEmbeddingDaoH2;
 import com.esgdev.amaranthui.engine.embedding.*;
+import com.esgdev.amaranthui.engine.tagging.*;
 import io.github.ollama4j.OllamaAPI;
 
 import java.util.Properties;
@@ -21,6 +22,7 @@ public class DependencyFactory {
     private static final EmbeddingDao<TextEmbedding> textEmbeddingDao;
     private static final EmbeddingConfiguration embeddingConfiguration;
     private static final ChatConfiguration chatConfiguration;
+    private static final TopicConfiguration topicConfiguration;
     private static final Logger logger = Logger.getLogger(DependencyFactory.class.getName());
     private static EmbeddingDao<ChatChunkEmbedding> chatChunkEmbeddingDao;
 
@@ -56,6 +58,18 @@ public class DependencyFactory {
             chatConfiguration = new ChatConfiguration(chatHistorySize, chatModel);
             // Initialize TextEmbeddingDao
             textEmbeddingDao = new TextEmbeddingDaoH2(embeddingConfiguration);
+
+            // Initialize TopicConfiguration
+            String taggingModel = properties.getProperty("tagging_model", "default-tagging-model");
+            float temperature = Float.parseFloat(properties.getProperty("temperature", "0.1"));
+            float topP = Float.parseFloat(properties.getProperty("top_p", "0.9"));
+            int topK = Integer.parseInt(properties.getProperty("top_k", "5"));
+
+            topicConfiguration = new TopicConfiguration(taggingModel, temperature, topP, topK);
+            logger.info("Tagging model: " + taggingModel);
+            logger.info("Temperature: " + temperature);
+            logger.info("Top P: " + topP);
+            logger.info("Top K: " + topK);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize dependencies", e);
         }
@@ -83,6 +97,10 @@ public class DependencyFactory {
 
     public static EmbeddingConfiguration getEmbeddingConfiguration() {
         return embeddingConfiguration;
+    }
+
+    public static TopicConfiguration getTopicConfiguration() {
+        return topicConfiguration;
     }
 
     public static EmbeddingDao<TextEmbedding> getTextEmbeddingDao() {

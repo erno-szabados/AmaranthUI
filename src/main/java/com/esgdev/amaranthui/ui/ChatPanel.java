@@ -24,6 +24,7 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
     private final JTextArea systemPromptTextArea;
     private JComboBox<String> chatModelDropdown;
     private JComboBox<String> embeddingModelDropdown;
+    private JComboBox<String> taggingModelDropdown;
 
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
@@ -120,6 +121,7 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
         // Create the dropdowns
         chatModelDropdown = new JComboBox<>();
         embeddingModelDropdown = new JComboBox<>();
+        taggingModelDropdown = new JComboBox<>();
 
         // Fetch models and populate the dropdowns
         populateModelDropdowns();
@@ -139,26 +141,49 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
             }
         });
 
+        taggingModelDropdown.addActionListener(e -> {
+            String selectedTaggingModel = (String) taggingModelDropdown.getSelectedItem();
+            if (selectedTaggingModel != null) {
+                modelClient.setTaggingModel(selectedTaggingModel);
+            }
+        });
+
         // Add the dropdowns to a panel
         JPanel dropdownPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         dropdownPanel.add(new JLabel("Chat Model:"));
         dropdownPanel.add(chatModelDropdown);
         dropdownPanel.add(new JLabel("Embedding Model:"));
         dropdownPanel.add(embeddingModelDropdown);
+        dropdownPanel.add(new JLabel("Tagging Model:"));
+        dropdownPanel.add(taggingModelDropdown);
 
         // Add the dropdown panel to the top of the ChatPanel
         add(dropdownPanel, BorderLayout.NORTH);
     }
 
-   private void populateModelDropdowns() {
+    private void populateModelDropdowns() {
         try {
             List<Model> models = modelClient.getModels();
+            String currentChatModel = modelClient.getChatModel();
+            String currentEmbeddingModel = modelClient.getEmbeddingModel();
+            String currentTaggingModel = modelClient.getTaggingModel();
+
             for (Model model : models) {
                 String family = model.getModelMeta().getFamily().toLowerCase();
                 if (family.contains("bert")) { // Case-insensitive match
                     embeddingModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentEmbeddingModel)) {
+                        embeddingModelDropdown.setSelectedItem(model.getName());
+                    }
                 } else {
+                    taggingModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentTaggingModel)) {
+                        taggingModelDropdown.setSelectedItem(model.getName());
+                    }
                     chatModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentChatModel)) {
+                        chatModelDropdown.setSelectedItem(model.getName());
+                    }
                 }
             }
         } catch (Exception e) {

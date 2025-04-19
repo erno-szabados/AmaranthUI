@@ -2,6 +2,8 @@ package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
 import com.esgdev.amaranthui.engine.embedding.*;
+import com.esgdev.amaranthui.engine.tagging.TopicAnalyst;
+import com.esgdev.amaranthui.engine.tagging.TopicConfiguration;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.chat.*;
@@ -38,6 +40,8 @@ public class ModelClient {
     private final EmbeddingConfiguration embeddingConfiguration;
     private static final String SYSTEM_PROMPT_KEY = "system_prompt";
     private final KeyValueStoreDaoH2 keyValueStoreDao;
+    private final TopicAnalyst topicAnalyst;
+    private final TopicConfiguration topicConfiguration;
 
     public ModelClient() {
         this.ollamaAPI = DependencyFactory.getOllamaAPI();
@@ -47,7 +51,14 @@ public class ModelClient {
         this.chatHistory = new ChatHistory(DependencyFactory.getChatConfiguration().getChatHistorySize());
         this.chatConfiguration = DependencyFactory.getChatConfiguration();
         this.embeddingConfiguration = DependencyFactory.getEmbeddingConfiguration();
+        this.topicConfiguration = DependencyFactory.getTopicConfiguration();
         this.keyValueStoreDao = DependencyFactory.getKeyValueStoreDao();
+        this.topicAnalyst = new TopicAnalyst(ollamaAPI, topicConfiguration, DependencyFactory.getTextEmbeddingDao(), DependencyFactory.getChatChunkEmbeddingDao(), new ArrayList<>());
+        this.topicAnalyst.setTopics(List.of(
+                "technology", "health", "sports", "politics", "entertainment",
+                "history", "business", "travel", "food", "education",
+                "environment", "science"
+        ));
     }
 
     public void addChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
@@ -90,6 +101,9 @@ public class ModelClient {
         while (retryCount < MAX_RETRIES) {
             try {
 
+                String userTopic = topicAnalyst.classify(userMessage);
+                logger.info("User topic: " + userTopic);
+
                 // Create a request builder
                 String modelName = chatConfiguration.getChatModel();
                 if (modelName == null || modelName.isEmpty()) {
@@ -121,11 +135,9 @@ public class ModelClient {
                     historyMessages = updatedHistoryMessages;
                 }
 
-
                 List<String> ragContext = getRagContext(userMessage, useChatEmbeddings);
 
                 getKnowledgeContext(userMessage, useTextEmbeddings, ragContext);
-
 
                 if (!ragContext.isEmpty()) {
                     String contextMessage = "Relevant information:\n" + String.join("\n\n", ragContext);
@@ -252,10 +264,47 @@ public class ModelClient {
         return models;
     }
 
+    public String getChatModel() {
+        String modelName = keyValueStoreDao.getValue("chat_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = chatConfiguration.getChatModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Chat model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
+    public String getEmbeddingModel() {
+        String modelName = keyValueStoreDao.getValue("embedding_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = embeddingConfiguration.getEmbeddingModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Embedding model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
+    public String getTaggingModel() {
+        String modelName = keyValueStoreDao.getValue("tagging_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = topicConfiguration.getTaggingModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Tagging model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
     public void setChatModel(String modelName) {
         if (modelName == null || modelName.isEmpty()) {
             throw new IllegalArgumentException("Model name cannot be null or empty.");
         }
+        keyValueStoreDao.saveValue("chat_model", modelName);
         chatConfiguration.setChatModel(modelName);
         logger.info("Chat model set to: " + modelName);
     }
@@ -264,7 +313,17 @@ public class ModelClient {
         if (modelName == null || modelName.isEmpty()) {
             throw new IllegalArgumentException("Model name cannot be null or empty.");
         }
+        keyValueStoreDao.saveValue("embedding_model", modelName);
         embeddingConfiguration.setEmbeddingModel(modelName);
         logger.info("Embedding model set to: " + modelName);
+    }
+
+    public void setTaggingModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        keyValueStoreDao.saveValue("tagging_model", modelName);
+        topicConfiguration.setTaggingModel(modelName);
+        logger.info("Tagging model set to: " + modelName);
     }
 }
