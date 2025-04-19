@@ -12,6 +12,7 @@ public class ChatChunkEmbedding extends TextEmbedding {
     private Long userId;
     private String role; // 'user' or 'model'
     private Long replyToChunkId; // ID of the chunk this chunk is a response to
+    private String topic;
 
     // Constructors, getters, setters
     public ChatChunkEmbedding() {
@@ -29,16 +30,18 @@ public class ChatChunkEmbedding extends TextEmbedding {
      * @param userId         The ID of the user who created this chunk.
      * @param role           The role of the user ('user' or 'model').
      * @param replyToChunkId The ID of the chunk this chunk is a response to.
+     * @param topic          The topic of the conversation.
      * @param embeddingModel The model used for embedding.
      * @param similarity     The similarity score.
      */
     public ChatChunkEmbedding(String chunk, List<Double> embedding, Date creationDate, Date lastAccessed,
-                              Long conversationId, Long userId, String role, Long replyToChunkId,
+                              Long conversationId, Long userId, String role, Long replyToChunkId, String topic,
                               String embeddingModel, double similarity) {
         super(chunk, embedding, creationDate, lastAccessed, embeddingModel, similarity); // Pass new fields to superclass
         this.conversationId = conversationId;
         this.userId = userId;
         this.role = role;
+        this.topic = topic;
         this.replyToChunkId = replyToChunkId;
     }
 
@@ -72,5 +75,13 @@ public class ChatChunkEmbedding extends TextEmbedding {
 
     public void setReplyToChunkId(Long replyToChunkId) {
         this.replyToChunkId = replyToChunkId;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 }

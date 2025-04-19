@@ -18,7 +18,7 @@ public class Main {
                 logger.log(java.util.logging.Level.SEVERE, "Failed to set Look and Feel", e);
             }
 
-            MainFrame frame = new MainFrame();
+            MainFrame frame = new MainFrame(client);
             frame.setVisible(true);
         });
     }

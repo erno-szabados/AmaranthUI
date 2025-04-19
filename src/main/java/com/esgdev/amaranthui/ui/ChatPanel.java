@@ -1,27 +1,33 @@
 package com.esgdev.amaranthui.ui;
 
 import com.esgdev.amaranthui.engine.ChatEntry;
+import com.esgdev.amaranthui.engine.ChatHistory;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
+import io.github.ollama4j.exceptions.OllamaBaseException;
+import io.github.ollama4j.models.response.Model;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.io.IOException;
+import java.util.List;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * ChatPanel is a Swing component that displays a chat interface.
  * It allows users to send messages and receive responses from a model client.
  */
-public class ChatPanel extends JPanel {
-    private final JList<ChatEntry> chatList;
+public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver {
     private final DefaultListModel<ChatEntry> listModel;
     private final JTextField inputField;
-    private final JButton sendButton;
     private final JCheckBox chatEmbeddingsCheckbox;
     private final JCheckBox textEmbeddingsCheckbox;
     private final JTextArea systemPromptTextArea;
+    private JComboBox<String> chatModelDropdown;
+    private JComboBox<String> embeddingModelDropdown;
+    private JComboBox<String> taggingModelDropdown;
 
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
@@ -34,9 +40,11 @@ public class ChatPanel extends JPanel {
 
         // Create the list model and JList
         listModel = new DefaultListModel<>();
-        chatList = new JList<>(listModel);
+        JList<ChatEntry> chatList = new JList<>(listModel);
         chatList.setCellRenderer(new ChatEntryRenderer());
         chatList.setFixedCellHeight(-1); // Enable variable row heights
+
+        addModelDropdowns();
 
         JPanel systemPromptPanel = new JPanel(new BorderLayout());
         systemPromptTextArea = new JTextArea();
@@ -45,16 +53,7 @@ public class ChatPanel extends JPanel {
         systemPromptTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
         // Inside the ChatPanel constructor, after initializing systemPromptTextArea
-        JButton savePromptButton = new JButton("Save");
-        savePromptButton.addActionListener(e -> {
-            String prompt = systemPromptTextArea.getText().trim();
-            boolean success = modelClient.saveSystemPrompt(prompt);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "System prompt saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to save system prompt.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        JButton savePromptButton = getSavePromptButton(modelClient);
         // Add the save button to the systemPromptPanel
         systemPromptPanel.add(savePromptButton, BorderLayout.SOUTH);
 
@@ -70,6 +69,8 @@ public class ChatPanel extends JPanel {
         // Add the JList to a scroll pane
         JScrollPane scrollPane = new JScrollPane(chatList);
 
+        modelClient.addChatHistoryObserver(this);
+
         // Wrap the systemPromptPanel and chat list in a JSplitPane
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, systemPromptPanel, scrollPane);
         splitPane.setResizeWeight(0.2); // Allocate initial space (20% for the system prompt)
@@ -82,7 +83,7 @@ public class ChatPanel extends JPanel {
         // Create the input panel
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputField = new JTextField();
-        sendButton = new JButton("Send");
+        JButton sendButton = new JButton("Send");
 
         // Create the spinner
         spinner = new JProgressBar();
@@ -119,6 +120,104 @@ public class ChatPanel extends JPanel {
         inputField.addActionListener(e -> sendMessage());
     }
 
+    private void addModelDropdowns() {
+        // Create the dropdowns
+        chatModelDropdown = new JComboBox<>();
+        embeddingModelDropdown = new JComboBox<>();
+        taggingModelDropdown = new JComboBox<>();
+
+        // Fetch models and populate the dropdowns
+        populateModelDropdowns();
+
+        // Add action listeners to update the selected models
+        chatModelDropdown.addActionListener(e -> {
+            String selectedChatModel = (String) chatModelDropdown.getSelectedItem();
+            if (selectedChatModel != null) {
+                modelClient.setChatModel(selectedChatModel);
+            }
+        });
+
+        embeddingModelDropdown.addActionListener(e -> {
+            String selectedEmbeddingModel = (String) embeddingModelDropdown.getSelectedItem();
+            if (selectedEmbeddingModel != null) {
+                modelClient.setEmbeddingModel(selectedEmbeddingModel);
+            }
+        });
+
+        taggingModelDropdown.addActionListener(e -> {
+            String selectedTaggingModel = (String) taggingModelDropdown.getSelectedItem();
+            if (selectedTaggingModel != null) {
+                modelClient.setTaggingModel(selectedTaggingModel);
+            }
+        });
+
+        // Add the dropdowns to a panel
+        JPanel dropdownPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        dropdownPanel.add(new JLabel("Chat Model:"));
+        dropdownPanel.add(chatModelDropdown);
+        dropdownPanel.add(new JLabel("Embedding Model:"));
+        dropdownPanel.add(embeddingModelDropdown);
+        dropdownPanel.add(new JLabel("Tagging Model:"));
+        dropdownPanel.add(taggingModelDropdown);
+
+        // Add the dropdown panel to the top of the ChatPanel
+        add(dropdownPanel, BorderLayout.NORTH);
+    }
+
+    private void populateModelDropdowns() {
+        try {
+            List<Model> models = modelClient.getModels();
+            String currentChatModel = modelClient.getChatModel();
+            String currentEmbeddingModel = modelClient.getEmbeddingModel();
+            String currentTaggingModel = modelClient.getTaggingModel();
+
+            for (Model model : models) {
+                String family = model.getModelMeta().getFamily().toLowerCase();
+                if (family.contains("bert")) { // Case-insensitive match
+                    embeddingModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentEmbeddingModel)) {
+                        embeddingModelDropdown.setSelectedItem(model.getName());
+                    }
+                } else {
+                    taggingModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentTaggingModel)) {
+                        taggingModelDropdown.setSelectedItem(model.getName());
+                    }
+                    chatModelDropdown.addItem(model.getName());
+                    if (model.getName().equals(currentChatModel)) {
+                        chatModelDropdown.setSelectedItem(model.getName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.log(java.util.logging.Level.SEVERE, "Error populating model dropdowns", e);
+            JOptionPane.showMessageDialog(this, "Failed to load models.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void onChatHistoryUpdated(List<ChatEntry> updatedChatEntries) {
+        SwingUtilities.invokeLater(() -> {
+            listModel.clear();
+            for (ChatEntry entry : updatedChatEntries) {
+                listModel.addElement(entry);
+            }
+        });
+    }
+
+    private JButton getSavePromptButton(ModelClient modelClient) {
+        JButton savePromptButton = new JButton("Save");
+        savePromptButton.addActionListener(e -> {
+            String prompt = systemPromptTextArea.getText().trim();
+            boolean success = modelClient.saveSystemPrompt(prompt);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "System prompt saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to save system prompt.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return savePromptButton;
+    }
+
     private void onMessageSend(ChatEntry userEntry) {
         // Show the spinner
         spinner.setVisible(true);
@@ -136,9 +235,11 @@ public class ChatPanel extends JPanel {
                     String response = modelClient.sendChatRequest(
                             systemPromptTextArea.getText(),
                             userEntry.getChunk(),
+                            userEntry.getTopic(),
                             useChatEmbeddings,
                             useTextEmbeddings
                     );
+                    String responseTopic = modelClient.classify(response);
 
                     // Create a new ChatEntry for the model's response
                     ChatEntry modelEntry = new ChatEntry(
@@ -146,6 +247,7 @@ public class ChatPanel extends JPanel {
                             null,
                             null,
                             "model",
+                            responseTopic,
                             null,
                             new Date()
                     );
@@ -167,8 +269,18 @@ public class ChatPanel extends JPanel {
         worker.execute();
     }
 
+    /**
+     * Sends the user's message to the model client and updates the chat history.
+     * This method is called when the user clicks the "Send" button or presses Enter.
+     */
     private void sendMessage() {
         String userMessage = inputField.getText().trim();
+        String userTopic = "";
+        try {
+            userTopic = modelClient.classify(userMessage);
+        } catch (OllamaBaseException | IOException | InterruptedException e) {
+            logger.log(Level.FINE, "Error classifying user message", e);
+        }
         if (!userMessage.isEmpty()) {
             // Create a ChatEntry for the user's message
             ChatEntry userEntry = new ChatEntry(
@@ -176,6 +288,7 @@ public class ChatPanel extends JPanel {
                     null, // conversationId (can be set later)
                     null, // userId (can be set later)
                     "user",
+                    userTopic,
                     null, // replyToChunkId
                     new Date()
             );

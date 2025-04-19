@@ -5,17 +5,15 @@ import com.esgdev.amaranthui.engine.ModelClient;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Main application frame for the Amaranth Model Client.
- * This frame serves as the main window for the application.
- */
 public class MainFrame extends JFrame {
-    public MainFrame() {
+    public MainFrame(ModelClient client) {
         setTitle("Amaranth - Model Client");
         setLayout(new BorderLayout());
 
         // Create the ModelClient
-        ModelClient modelClient = new ModelClient();
+
+        // Set up the File Menu
+        setJMenuBar(new FileMenu(client, this));
 
         // Create the JTabbedPane
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -23,11 +21,11 @@ public class MainFrame extends JFrame {
         setPreferredSize(new Dimension(800, 600));
 
         // Add the ChatPanel as the first tab
-        ChatPanel chatPanel = new ChatPanel(modelClient);
+        ChatPanel chatPanel = new ChatPanel(client);
         tabbedPane.addTab("Chat", chatPanel);
 
         // Add the RagSearchPanel as the second tab
-        RagSearchPanel ragSearchPanel = new RagSearchPanel(modelClient);
+        RagSearchPanel ragSearchPanel = new RagSearchPanel(client);
         tabbedPane.addTab("RAG Search", ragSearchPanel);
 
         // Add the tabbed pane to the frame

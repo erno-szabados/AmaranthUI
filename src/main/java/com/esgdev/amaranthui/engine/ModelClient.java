@@ -1,13 +1,16 @@
 package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
-import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
-import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
-import com.esgdev.amaranthui.engine.embedding.EmbeddingManagerInterface;
-import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.*;
+import com.esgdev.amaranthui.engine.tagging.TopicAnalyst;
+import com.esgdev.amaranthui.engine.tagging.TopicConfiguration;
 import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.chat.*;
+import io.github.ollama4j.models.response.Model;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpTimeoutException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,9 +36,12 @@ public class ModelClient {
     private final EmbeddingManagerInterface<ChatChunkEmbedding, ChatEntry> chatChunkEmbeddingManager;
     private final ChatHistory chatHistory;
     private final OllamaAPI ollamaAPI;
-    private final ChatConfiguration ChatConfiguration;
+    private final ChatConfiguration chatConfiguration;
+    private final EmbeddingConfiguration embeddingConfiguration;
     private static final String SYSTEM_PROMPT_KEY = "system_prompt";
     private final KeyValueStoreDaoH2 keyValueStoreDao;
+    private final TopicAnalyst topicAnalyst;
+    private final TopicConfiguration topicConfiguration;
 
     public ModelClient() {
         this.ollamaAPI = DependencyFactory.getOllamaAPI();
@@ -43,8 +49,16 @@ public class ModelClient {
         this.textEmbeddingManager = DependencyFactory.createTextEmbeddingManager();
         this.chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
         this.chatHistory = new ChatHistory(DependencyFactory.getChatConfiguration().getChatHistorySize());
-        this.ChatConfiguration = DependencyFactory.getChatConfiguration();
+        this.chatConfiguration = DependencyFactory.getChatConfiguration();
+        this.embeddingConfiguration = DependencyFactory.getEmbeddingConfiguration();
+        this.topicConfiguration = DependencyFactory.getTopicConfiguration();
         this.keyValueStoreDao = DependencyFactory.getKeyValueStoreDao();
+        this.topicAnalyst = new TopicAnalyst(ollamaAPI, topicConfiguration, DependencyFactory.getTextEmbeddingDao(), DependencyFactory.getChatChunkEmbeddingDao(), new ArrayList<>());
+        this.topicAnalyst.setTopics(List.of(
+                "technology", "health", "sports", "politics", "entertainment",
+                "history", "business", "travel", "food", "education",
+                "environment", "science"
+        ));
     }
 
     public void addChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
@@ -63,9 +77,15 @@ public class ModelClient {
         return chatHistory.getChatHistory();
     }
 
+    public void addChatHistoryObserver(ChatHistory.ChatHistoryObserver observer) {
+        chatHistory.addObserver(observer);
+    }
+
     public List<ChatChunkEmbedding> findSimilarChatEmbeddings(String query, int limit) throws Exception {
         // Generate embeddings for the query
-        ChatEntry tempEntry = new ChatEntry(query, null, null, "user", null, new Date());
+        // TODO if query too short, we have a hard time classifying it
+        String topic = topicAnalyst.classify(query);
+        ChatEntry tempEntry = new ChatEntry(query, null, null, "user", topic,null, new Date());
         List<ChatChunkEmbedding> queryEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
 
         if (queryEmbeddings.isEmpty()) {
@@ -76,22 +96,21 @@ public class ModelClient {
         return chatChunkEmbeddingManager.findSimilarEmbeddings(queryEmbeddings.get(0), limit);
     }
 
-    public String sendChatRequest(String systemPrompt, String userMessage, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
+    public String sendChatRequest(String systemPrompt, String userMessage,String topic, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
         int retryCount = 0;
         int retryInterval = BASE_RETRY_INTERVAL_MS;
 
         while (retryCount < MAX_RETRIES) {
             try {
-
                 // Create a request builder
-                String modelName = ChatConfiguration.getChatModel();
+                String modelName = chatConfiguration.getChatModel();
                 if (modelName == null || modelName.isEmpty()) {
                     throw new IllegalArgumentException("Chat model name cannot be null or empty.");
                 }
                 OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(modelName);
 
                 // Transform chat history into OllamaChatMessage objects
-                List<OllamaChatMessage> historyMessages = chatHistory.stream()
+                List<OllamaChatMessage> historyMessages = chatHistory.getChatHistory().stream()
                         .map(entry -> new OllamaChatMessage(
                                 entry.getRole().equalsIgnoreCase("user") ? OllamaChatMessageRole.USER : OllamaChatMessageRole.ASSISTANT,
                                 entry.getChunk()
@@ -114,18 +133,17 @@ public class ModelClient {
                     historyMessages = updatedHistoryMessages;
                 }
 
-
                 List<String> ragContext = getRagContext(userMessage, useChatEmbeddings);
 
                 getKnowledgeContext(userMessage, useTextEmbeddings, ragContext);
 
-
                 if (!ragContext.isEmpty()) {
-                    String contextMessage = "Relevant information:\n" + String.join("\n\n", ragContext);
+                    String contextMessage = "Topic:" + topic + "\nRelevant information:\n" + String.join("\n\n", ragContext);
                     builder.withMessage(OllamaChatMessageRole.SYSTEM, contextMessage);
                 }
 
                 logger.info("Sending chat request with the following details:");
+                logger.info("Topic: " + topic);
                 logger.info("User message: " + userMessage);
                 logger.info("Chat history messages: " + historyMessages);
                 logger.info("RAG context: " + String.join("\n", ragContext));
@@ -181,8 +199,14 @@ public class ModelClient {
         // Add RAG context from embeddings if enabled
         List<String> ragContext = new ArrayList<>();
 
+        String userTopic = "";
         if (useChatEmbeddings) {
-            ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", null, new Date());
+            try {
+                userTopic = topicAnalyst.classify(userMessage);
+            } catch (Exception e) {
+                logger.fine("Error classifying user message: " + e.getMessage());
+            }
+            ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", userTopic,null, new Date());
             List<ChatChunkEmbedding> userEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
             if (!userEmbeddings.isEmpty()) {
                 List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
@@ -200,7 +224,7 @@ public class ModelClient {
     /**
      * Processes a chat entry to generate and save embeddings.
      *
-     * @param chatEntry
+     * @param chatEntry The chat entry to process.
      */
     private void processChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
         logger.info("Processing chat entry for embedding generation...");
@@ -213,7 +237,7 @@ public class ModelClient {
      * Processes a text to generate and save embeddings.
      * Text and chat entry embeddings are stored in different tables.
      *
-     * @param text
+     * @param text The text to process.
      */
     void processText(String text) throws EmbeddingGenerationException {
         logger.info("Processing text for embedding generation...");
@@ -228,5 +252,87 @@ public class ModelClient {
 
     public String loadSystemPrompt() {
         return keyValueStoreDao.getValue(SYSTEM_PROMPT_KEY);
+    }
+
+    public void clearChatHistory() {
+        chatHistory.clear();
+        logger.info("Chat history cleared.");
+    }
+
+    public List<Model> getModels() throws OllamaBaseException, IOException, URISyntaxException, InterruptedException {
+        List<Model> models = ollamaAPI.listModels();
+        if (models.isEmpty()) {
+            logger.warning("No models found.");
+        } else {
+            logger.info("Available models: " + models);
+        }
+        return models;
+    }
+
+    public String getChatModel() {
+        String modelName = keyValueStoreDao.getValue("chat_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = chatConfiguration.getChatModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Chat model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
+    public String getEmbeddingModel() {
+        String modelName = keyValueStoreDao.getValue("embedding_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = embeddingConfiguration.getEmbeddingModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Embedding model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
+    public String getTaggingModel() {
+        String modelName = keyValueStoreDao.getValue("tagging_model");
+        if (modelName == null || modelName.isEmpty()) {
+            modelName = topicConfiguration.getTaggingModel();
+        }
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Tagging model name cannot be null or empty.");
+        }
+
+        return modelName;
+    }
+
+    public void setChatModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        keyValueStoreDao.saveValue("chat_model", modelName);
+        chatConfiguration.setChatModel(modelName);
+        logger.info("Chat model set to: " + modelName);
+    }
+
+    public void setEmbeddingModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        keyValueStoreDao.saveValue("embedding_model", modelName);
+        embeddingConfiguration.setEmbeddingModel(modelName);
+        logger.info("Embedding model set to: " + modelName);
+    }
+
+    public void setTaggingModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        keyValueStoreDao.saveValue("tagging_model", modelName);
+        topicConfiguration.setTaggingModel(modelName);
+        logger.info("Tagging model set to: " + modelName);
+    }
+
+    public String classify(String text) throws IOException, OllamaBaseException, InterruptedException {
+        return topicAnalyst.classify(text);
     }
 }

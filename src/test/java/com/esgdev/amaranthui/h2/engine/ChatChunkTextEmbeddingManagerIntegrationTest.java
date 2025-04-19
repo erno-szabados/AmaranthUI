@@ -51,6 +51,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 1L,
                 "user",
+                "topic",
                 null,
                 new Date()
         );
@@ -77,7 +78,8 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 "user",
                 null,
-                "curren t-model", // Embedding model
+                "topic",
+                "current-model", // Embedding model
                 0.0 // Similarity
         );
 
@@ -108,6 +110,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 "user",
                 null,
+                "topic",
                 "current-model", // Embedding model
                 0.0 // Similarity
         );
@@ -137,6 +140,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 "user",
                 null,
+                "topic",
                 "current-model",
                 0.0
         );
@@ -152,6 +156,7 @@ public class ChatChunkTextEmbeddingManagerIntegrationTest {
                 1L,
                 "user",
                 null,
+                "topic",
                 "different-model",
                 0.0
         );

@@ -11,15 +11,17 @@ public class ChatEntry {
     private Long conversationId;
     private Long userId;
     private String role; // 'user' or 'model'
+    private String topic;
     private Long replyToChunkId;
     private Date creationDate;
 
     // Constructors, getters, setters
-    public ChatEntry(String chunk, Long conversationId, Long userId, String role, Long replyToChunkId, Date creationDate) {
+    public ChatEntry(String chunk, Long conversationId, Long userId, String role, String topic, Long replyToChunkId, Date creationDate) {
         this.chunk = chunk;
         this.conversationId = conversationId;
         this.userId = userId;
         this.role = role;
+        this.topic = topic;
         this.replyToChunkId = replyToChunkId;
         this.creationDate = creationDate;
     }
@@ -70,5 +72,13 @@ public class ChatEntry {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 }
