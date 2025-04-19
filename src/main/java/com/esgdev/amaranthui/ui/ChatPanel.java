@@ -150,13 +150,16 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
         add(dropdownPanel, BorderLayout.NORTH);
     }
 
-    private void populateModelDropdowns() {
+   private void populateModelDropdowns() {
         try {
             List<Model> models = modelClient.getModels();
             for (Model model : models) {
-                // User has to decide which model to use for chat and which for embedding
-                chatModelDropdown.addItem(model.getName());
-                embeddingModelDropdown.addItem(model.getName());
+                String family = model.getModelMeta().getFamily().toLowerCase();
+                if (family.contains("bert")) { // Case-insensitive match
+                    embeddingModelDropdown.addItem(model.getName());
+                } else {
+                    chatModelDropdown.addItem(model.getName());
+                }
             }
         } catch (Exception e) {
             logger.log(java.util.logging.Level.SEVERE, "Error populating model dropdowns", e);
