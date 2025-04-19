@@ -3,20 +3,37 @@ package com.esgdev.amaranthui.ui;
 import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
 
 import javax.swing.*;
-import javax.swing.border.MatteBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * Custom ListCellRenderer for displaying RAG search results (Chat chunk embeddings) with metadata.
+ * Custom ListCellRenderer for displaying RAG search results (Chat chunk embeddings) with metadata and content styling.
  */
-public class ChatChunkEmbeddingRenderer extends JTextArea implements ListCellRenderer<ChatChunkEmbedding> {
+public class ChatChunkEmbeddingRenderer extends JPanel implements ListCellRenderer<ChatChunkEmbedding> {
+    private final JLabel metadataLabel;
+    private final JTextArea contentArea;
 
     public ChatChunkEmbeddingRenderer() {
+        setLayout(new BorderLayout());
         setOpaque(true);
-        setLineWrap(true);
-        setWrapStyleWord(true);
-        setEditable(false);
-        setFont(new Font("SansSerif", Font.PLAIN, 12)); // Set font size to 12pt
+
+        // Metadata label with smaller font and color
+        metadataLabel = new JLabel();
+        metadataLabel.setFont(new Font("SansSerif", Font.BOLD, 10));
+        metadataLabel.setForeground(new Color(100, 100, 100)); // Gray color
+        metadataLabel.setBorder(new EmptyBorder(5, 5, 0, 5));
+
+        // Content area with larger font and wrapping
+        contentArea = new JTextArea();
+        contentArea.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        contentArea.setLineWrap(true);
+        contentArea.setWrapStyleWord(true);
+        contentArea.setEditable(false);
+        contentArea.setOpaque(false);
+        contentArea.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+        add(metadataLabel, BorderLayout.NORTH);
+        add(contentArea, BorderLayout.CENTER);
     }
 
     @Override
@@ -28,49 +45,35 @@ public class ChatChunkEmbeddingRenderer extends JTextArea implements ListCellRen
             boolean cellHasFocus) {
 
         if (value != null) {
-            // Build the display text with metadata and chunk content
+            // Set metadata text
             String metadata = String.format(
-                    "Conversation ID: %d, User ID: %d, Role: %s, Topic: %s, Reply To: %d, Embedding Model: %s, Similarity: %.2f",
+                    "Conversation ID: %d | User ID: %d | Role: %s | Topic: %s | Similarity: %.2f",
                     value.getConversationId(),
                     value.getUserId(),
                     value.getRole(),
                     value.getTopic(),
-                    value.getReplyToChunkId() != null ? value.getReplyToChunkId() : -1,
-                    value.getEmbeddingModel(),
                     value.getSimilarity()
             );
-            String content = value.getChunk();
+            metadataLabel.setText(metadata);
 
-            setText(metadata + "\n" + content);
+            // Set content text
+            contentArea.setText(value.getChunk());
         } else {
-            setText("No data available");
+            metadataLabel.setText("No metadata available");
+            contentArea.setText("No content available");
         }
 
         // Handle selection and focus
         if (isSelected) {
             setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
+            metadataLabel.setForeground(list.getSelectionForeground());
+            contentArea.setForeground(list.getSelectionForeground());
         } else {
             setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-
-        // Add a border around each cell
-        setBorder(new MatteBorder(1, 1, 1, 0, Color.LIGHT_GRAY));
-
-        // Adjust the height of the JTextArea to fit the content
-        int width = list.getWidth();
-        if (width > 0) {
-            setSize(width, Short.MAX_VALUE);
+            metadataLabel.setForeground(new Color(100, 100, 100)); // Reset to gray
+            contentArea.setForeground(list.getForeground());
         }
 
         return this;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension size = super.getPreferredSize();
-        size.width = getWidth(); // Ensure the width matches the list
-        return size;
     }
 }
