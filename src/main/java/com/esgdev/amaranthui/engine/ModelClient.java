@@ -63,6 +63,10 @@ public class ModelClient {
         return chatHistory.getChatHistory();
     }
 
+    public void addChatHistoryObserver(ChatHistory.ChatHistoryObserver observer) {
+        chatHistory.addObserver(observer);
+    }
+
     public List<ChatChunkEmbedding> findSimilarChatEmbeddings(String query, int limit) throws Exception {
         // Generate embeddings for the query
         ChatEntry tempEntry = new ChatEntry(query, null, null, "user", null, new Date());
@@ -91,7 +95,7 @@ public class ModelClient {
                 OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(modelName);
 
                 // Transform chat history into OllamaChatMessage objects
-                List<OllamaChatMessage> historyMessages = chatHistory.stream()
+                List<OllamaChatMessage> historyMessages = chatHistory.getChatHistory().stream()
                         .map(entry -> new OllamaChatMessage(
                                 entry.getRole().equalsIgnoreCase("user") ? OllamaChatMessageRole.USER : OllamaChatMessageRole.ASSISTANT,
                                 entry.getChunk()
@@ -200,7 +204,7 @@ public class ModelClient {
     /**
      * Processes a chat entry to generate and save embeddings.
      *
-     * @param chatEntry
+     * @param chatEntry The chat entry to process.
      */
     private void processChatEntry(ChatEntry chatEntry) throws EmbeddingGenerationException {
         logger.info("Processing chat entry for embedding generation...");
@@ -213,7 +217,7 @@ public class ModelClient {
      * Processes a text to generate and save embeddings.
      * Text and chat entry embeddings are stored in different tables.
      *
-     * @param text
+     * @param text The text to process.
      */
     void processText(String text) throws EmbeddingGenerationException {
         logger.info("Processing text for embedding generation...");
@@ -228,5 +232,10 @@ public class ModelClient {
 
     public String loadSystemPrompt() {
         return keyValueStoreDao.getValue(SYSTEM_PROMPT_KEY);
+    }
+
+    public void clearChatHistory() {
+        chatHistory.clear();
+        logger.info("Chat history cleared.");
     }
 }

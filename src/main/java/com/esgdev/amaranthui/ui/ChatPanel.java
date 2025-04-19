@@ -1,12 +1,13 @@
 package com.esgdev.amaranthui.ui;
 
 import com.esgdev.amaranthui.engine.ChatEntry;
+import com.esgdev.amaranthui.engine.ChatHistory;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.util.List;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -14,11 +15,10 @@ import java.util.logging.Logger;
  * ChatPanel is a Swing component that displays a chat interface.
  * It allows users to send messages and receive responses from a model client.
  */
-public class ChatPanel extends JPanel {
+public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver {
     private final JList<ChatEntry> chatList;
     private final DefaultListModel<ChatEntry> listModel;
     private final JTextField inputField;
-    private final JButton sendButton;
     private final JCheckBox chatEmbeddingsCheckbox;
     private final JCheckBox textEmbeddingsCheckbox;
     private final JTextArea systemPromptTextArea;
@@ -45,16 +45,7 @@ public class ChatPanel extends JPanel {
         systemPromptTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
         // Inside the ChatPanel constructor, after initializing systemPromptTextArea
-        JButton savePromptButton = new JButton("Save");
-        savePromptButton.addActionListener(e -> {
-            String prompt = systemPromptTextArea.getText().trim();
-            boolean success = modelClient.saveSystemPrompt(prompt);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "System prompt saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to save system prompt.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        JButton savePromptButton = getSavePromptButton(modelClient);
         // Add the save button to the systemPromptPanel
         systemPromptPanel.add(savePromptButton, BorderLayout.SOUTH);
 
@@ -70,6 +61,8 @@ public class ChatPanel extends JPanel {
         // Add the JList to a scroll pane
         JScrollPane scrollPane = new JScrollPane(chatList);
 
+        modelClient.addChatHistoryObserver(this);
+
         // Wrap the systemPromptPanel and chat list in a JSplitPane
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, systemPromptPanel, scrollPane);
         splitPane.setResizeWeight(0.2); // Allocate initial space (20% for the system prompt)
@@ -82,7 +75,7 @@ public class ChatPanel extends JPanel {
         // Create the input panel
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputField = new JTextField();
-        sendButton = new JButton("Send");
+        JButton sendButton = new JButton("Send");
 
         // Create the spinner
         spinner = new JProgressBar();
@@ -117,6 +110,29 @@ public class ChatPanel extends JPanel {
         // Add action listeners for sending messages
         sendButton.addActionListener(e -> sendMessage());
         inputField.addActionListener(e -> sendMessage());
+    }
+
+    public void onChatHistoryUpdated(List<ChatEntry> updatedChatEntries) {
+        SwingUtilities.invokeLater(() -> {
+            listModel.clear();
+            for (ChatEntry entry : updatedChatEntries) {
+                listModel.addElement(entry);
+            }
+        });
+    }
+
+    private JButton getSavePromptButton(ModelClient modelClient) {
+        JButton savePromptButton = new JButton("Save");
+        savePromptButton.addActionListener(e -> {
+            String prompt = systemPromptTextArea.getText().trim();
+            boolean success = modelClient.saveSystemPrompt(prompt);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "System prompt saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to save system prompt.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return savePromptButton;
     }
 
     private void onMessageSend(ChatEntry userEntry) {
