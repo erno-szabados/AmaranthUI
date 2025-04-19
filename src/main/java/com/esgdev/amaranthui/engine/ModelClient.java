@@ -1,13 +1,14 @@
 package com.esgdev.amaranthui.engine;
 
 import com.esgdev.amaranthui.db.h2.KeyValueStoreDaoH2;
-import com.esgdev.amaranthui.engine.embedding.ChatChunkEmbedding;
-import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
-import com.esgdev.amaranthui.engine.embedding.EmbeddingManagerInterface;
-import com.esgdev.amaranthui.engine.embedding.TextEmbedding;
+import com.esgdev.amaranthui.engine.embedding.*;
 import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.chat.*;
+import io.github.ollama4j.models.response.Model;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpTimeoutException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +34,8 @@ public class ModelClient {
     private final EmbeddingManagerInterface<ChatChunkEmbedding, ChatEntry> chatChunkEmbeddingManager;
     private final ChatHistory chatHistory;
     private final OllamaAPI ollamaAPI;
-    private final ChatConfiguration ChatConfiguration;
+    private final ChatConfiguration chatConfiguration;
+    private final EmbeddingConfiguration embeddingConfiguration;
     private static final String SYSTEM_PROMPT_KEY = "system_prompt";
     private final KeyValueStoreDaoH2 keyValueStoreDao;
 
@@ -43,7 +45,8 @@ public class ModelClient {
         this.textEmbeddingManager = DependencyFactory.createTextEmbeddingManager();
         this.chatChunkEmbeddingManager = DependencyFactory.createChatChunkEmbeddingManager();
         this.chatHistory = new ChatHistory(DependencyFactory.getChatConfiguration().getChatHistorySize());
-        this.ChatConfiguration = DependencyFactory.getChatConfiguration();
+        this.chatConfiguration = DependencyFactory.getChatConfiguration();
+        this.embeddingConfiguration = DependencyFactory.getEmbeddingConfiguration();
         this.keyValueStoreDao = DependencyFactory.getKeyValueStoreDao();
     }
 
@@ -88,7 +91,7 @@ public class ModelClient {
             try {
 
                 // Create a request builder
-                String modelName = ChatConfiguration.getChatModel();
+                String modelName = chatConfiguration.getChatModel();
                 if (modelName == null || modelName.isEmpty()) {
                     throw new IllegalArgumentException("Chat model name cannot be null or empty.");
                 }
@@ -237,5 +240,31 @@ public class ModelClient {
     public void clearChatHistory() {
         chatHistory.clear();
         logger.info("Chat history cleared.");
+    }
+
+    public List<Model> getModels() throws OllamaBaseException, IOException, URISyntaxException, InterruptedException {
+        List<Model> models = ollamaAPI.listModels();
+        if (models.isEmpty()) {
+            logger.warning("No models found.");
+        } else {
+            logger.info("Available models: " + models);
+        }
+        return models;
+    }
+
+    public void setChatModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        chatConfiguration.setChatModel(modelName);
+        logger.info("Chat model set to: " + modelName);
+    }
+
+    public void setEmbeddingModel(String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            throw new IllegalArgumentException("Model name cannot be null or empty.");
+        }
+        embeddingConfiguration.setEmbeddingModel(modelName);
+        logger.info("Embedding model set to: " + modelName);
     }
 }

@@ -6,7 +6,7 @@ package com.esgdev.amaranthui.engine.embedding;
 public class EmbeddingConfiguration {
     private final int chunkSize;
     private final int overlap;
-    private final String embeddingModel;
+    private String embeddingModel;
     private final String jdbcUrl;
     private final String jdbcUser;
     private final String jdbcPassword;
@@ -45,5 +45,9 @@ public class EmbeddingConfiguration {
 
     public String getJdbcPassword() {
         return jdbcPassword;
+    }
+
+    public void setEmbeddingModel(String modelName) {
+        this.embeddingModel = modelName;
     }
 }

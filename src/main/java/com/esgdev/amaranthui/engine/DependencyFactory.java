@@ -81,6 +81,10 @@ public class DependencyFactory {
         return chatConfiguration;
     }
 
+    public static EmbeddingConfiguration getEmbeddingConfiguration() {
+        return embeddingConfiguration;
+    }
+
     public static EmbeddingDao<TextEmbedding> getTextEmbeddingDao() {
         return textEmbeddingDao;
     }
@@ -96,4 +100,5 @@ public class DependencyFactory {
                 embeddingConfiguration.getJdbcPassword()
         );
     }
+
 }

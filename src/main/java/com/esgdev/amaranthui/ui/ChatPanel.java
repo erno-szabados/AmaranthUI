@@ -4,6 +4,7 @@ import com.esgdev.amaranthui.engine.ChatEntry;
 import com.esgdev.amaranthui.engine.ChatHistory;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
+import io.github.ollama4j.models.response.Model;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,12 +17,13 @@ import java.util.logging.Logger;
  * It allows users to send messages and receive responses from a model client.
  */
 public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver {
-    private final JList<ChatEntry> chatList;
     private final DefaultListModel<ChatEntry> listModel;
     private final JTextField inputField;
     private final JCheckBox chatEmbeddingsCheckbox;
     private final JCheckBox textEmbeddingsCheckbox;
     private final JTextArea systemPromptTextArea;
+    private JComboBox<String> chatModelDropdown;
+    private JComboBox<String> embeddingModelDropdown;
 
     private final ModelClient modelClient;
     private final Logger logger = Logger.getLogger(ChatPanel.class.getName());
@@ -34,9 +36,11 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
 
         // Create the list model and JList
         listModel = new DefaultListModel<>();
-        chatList = new JList<>(listModel);
+        JList<ChatEntry> chatList = new JList<>(listModel);
         chatList.setCellRenderer(new ChatEntryRenderer());
         chatList.setFixedCellHeight(-1); // Enable variable row heights
+
+        addModelDropdowns();
 
         JPanel systemPromptPanel = new JPanel(new BorderLayout());
         systemPromptTextArea = new JTextArea();
@@ -110,6 +114,54 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
         // Add action listeners for sending messages
         sendButton.addActionListener(e -> sendMessage());
         inputField.addActionListener(e -> sendMessage());
+    }
+
+    private void addModelDropdowns() {
+        // Create the dropdowns
+        chatModelDropdown = new JComboBox<>();
+        embeddingModelDropdown = new JComboBox<>();
+
+        // Fetch models and populate the dropdowns
+        populateModelDropdowns();
+
+        // Add action listeners to update the selected models
+        chatModelDropdown.addActionListener(e -> {
+            String selectedChatModel = (String) chatModelDropdown.getSelectedItem();
+            if (selectedChatModel != null) {
+                modelClient.setChatModel(selectedChatModel);
+            }
+        });
+
+        embeddingModelDropdown.addActionListener(e -> {
+            String selectedEmbeddingModel = (String) embeddingModelDropdown.getSelectedItem();
+            if (selectedEmbeddingModel != null) {
+                modelClient.setEmbeddingModel(selectedEmbeddingModel);
+            }
+        });
+
+        // Add the dropdowns to a panel
+        JPanel dropdownPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        dropdownPanel.add(new JLabel("Chat Model:"));
+        dropdownPanel.add(chatModelDropdown);
+        dropdownPanel.add(new JLabel("Embedding Model:"));
+        dropdownPanel.add(embeddingModelDropdown);
+
+        // Add the dropdown panel to the top of the ChatPanel
+        add(dropdownPanel, BorderLayout.NORTH);
+    }
+
+    private void populateModelDropdowns() {
+        try {
+            List<Model> models = modelClient.getModels();
+            for (Model model : models) {
+                // User has to decide which model to use for chat and which for embedding
+                chatModelDropdown.addItem(model.getName());
+                embeddingModelDropdown.addItem(model.getName());
+            }
+        } catch (Exception e) {
+            logger.log(java.util.logging.Level.SEVERE, "Error populating model dropdowns", e);
+            JOptionPane.showMessageDialog(this, "Failed to load models.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void onChatHistoryUpdated(List<ChatEntry> updatedChatEntries) {
