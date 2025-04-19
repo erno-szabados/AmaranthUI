@@ -4,12 +4,15 @@ import com.esgdev.amaranthui.engine.ChatEntry;
 import com.esgdev.amaranthui.engine.ChatHistory;
 import com.esgdev.amaranthui.engine.embedding.EmbeddingGenerationException;
 import com.esgdev.amaranthui.engine.ModelClient;
+import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.response.Model;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -232,9 +235,11 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
                     String response = modelClient.sendChatRequest(
                             systemPromptTextArea.getText(),
                             userEntry.getChunk(),
+                            userEntry.getTopic(),
                             useChatEmbeddings,
                             useTextEmbeddings
                     );
+                    String responseTopic = modelClient.classify(response);
 
                     // Create a new ChatEntry for the model's response
                     ChatEntry modelEntry = new ChatEntry(
@@ -242,6 +247,7 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
                             null,
                             null,
                             "model",
+                            responseTopic,
                             null,
                             new Date()
                     );
@@ -263,8 +269,18 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
         worker.execute();
     }
 
+    /**
+     * Sends the user's message to the model client and updates the chat history.
+     * This method is called when the user clicks the "Send" button or presses Enter.
+     */
     private void sendMessage() {
         String userMessage = inputField.getText().trim();
+        String userTopic = "";
+        try {
+            userTopic = modelClient.classify(userMessage);
+        } catch (OllamaBaseException | IOException | InterruptedException e) {
+            logger.log(Level.FINE, "Error classifying user message", e);
+        }
         if (!userMessage.isEmpty()) {
             // Create a ChatEntry for the user's message
             ChatEntry userEntry = new ChatEntry(
@@ -272,6 +288,7 @@ public class ChatPanel extends JPanel implements ChatHistory.ChatHistoryObserver
                     null, // conversationId (can be set later)
                     null, // userId (can be set later)
                     "user",
+                    userTopic,
                     null, // replyToChunkId
                     new Date()
             );

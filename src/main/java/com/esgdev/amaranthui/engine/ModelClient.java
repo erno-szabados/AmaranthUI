@@ -83,7 +83,9 @@ public class ModelClient {
 
     public List<ChatChunkEmbedding> findSimilarChatEmbeddings(String query, int limit) throws Exception {
         // Generate embeddings for the query
-        ChatEntry tempEntry = new ChatEntry(query, null, null, "user", null, new Date());
+        // TODO if query too short, we have a hard time classifying it
+        String topic = topicAnalyst.classify(query);
+        ChatEntry tempEntry = new ChatEntry(query, null, null, "user", topic,null, new Date());
         List<ChatChunkEmbedding> queryEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
 
         if (queryEmbeddings.isEmpty()) {
@@ -94,16 +96,12 @@ public class ModelClient {
         return chatChunkEmbeddingManager.findSimilarEmbeddings(queryEmbeddings.get(0), limit);
     }
 
-    public String sendChatRequest(String systemPrompt, String userMessage, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
+    public String sendChatRequest(String systemPrompt, String userMessage,String topic, boolean useChatEmbeddings, boolean useTextEmbeddings) throws Exception {
         int retryCount = 0;
         int retryInterval = BASE_RETRY_INTERVAL_MS;
 
         while (retryCount < MAX_RETRIES) {
             try {
-
-                String userTopic = topicAnalyst.classify(userMessage);
-                logger.info("User topic: " + userTopic);
-
                 // Create a request builder
                 String modelName = chatConfiguration.getChatModel();
                 if (modelName == null || modelName.isEmpty()) {
@@ -140,11 +138,12 @@ public class ModelClient {
                 getKnowledgeContext(userMessage, useTextEmbeddings, ragContext);
 
                 if (!ragContext.isEmpty()) {
-                    String contextMessage = "Relevant information:\n" + String.join("\n\n", ragContext);
+                    String contextMessage = "Topic:" + topic + "\nRelevant information:\n" + String.join("\n\n", ragContext);
                     builder.withMessage(OllamaChatMessageRole.SYSTEM, contextMessage);
                 }
 
                 logger.info("Sending chat request with the following details:");
+                logger.info("Topic: " + topic);
                 logger.info("User message: " + userMessage);
                 logger.info("Chat history messages: " + historyMessages);
                 logger.info("RAG context: " + String.join("\n", ragContext));
@@ -200,8 +199,14 @@ public class ModelClient {
         // Add RAG context from embeddings if enabled
         List<String> ragContext = new ArrayList<>();
 
+        String userTopic = "";
         if (useChatEmbeddings) {
-            ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", null, new Date());
+            try {
+                userTopic = topicAnalyst.classify(userMessage);
+            } catch (Exception e) {
+                logger.fine("Error classifying user message: " + e.getMessage());
+            }
+            ChatEntry tempEntry = new ChatEntry(userMessage, null, null, "user", userTopic,null, new Date());
             List<ChatChunkEmbedding> userEmbeddings = chatChunkEmbeddingManager.generateEmbeddings(tempEntry);
             if (!userEmbeddings.isEmpty()) {
                 List<ChatChunkEmbedding> similarChats = chatChunkEmbeddingManager.findSimilarEmbeddings(
@@ -325,5 +330,9 @@ public class ModelClient {
         keyValueStoreDao.saveValue("tagging_model", modelName);
         topicConfiguration.setTaggingModel(modelName);
         logger.info("Tagging model set to: " + modelName);
+    }
+
+    public String classify(String text) throws IOException, OllamaBaseException, InterruptedException {
+        return topicAnalyst.classify(text);
     }
 }

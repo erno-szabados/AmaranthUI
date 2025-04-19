@@ -61,9 +61,9 @@ public class DependencyFactory {
 
             // Initialize TopicConfiguration
             String taggingModel = properties.getProperty("tagging_model", "default-tagging-model");
-            float temperature = Float.parseFloat(properties.getProperty("temperature", "0.1"));
-            float topP = Float.parseFloat(properties.getProperty("top_p", "0.9"));
-            int topK = Integer.parseInt(properties.getProperty("top_k", "5"));
+            float temperature = Float.parseFloat(properties.getProperty("tagging_temperature", "0.1"));
+            float topP = Float.parseFloat(properties.getProperty("tagging_top_p", "0.9"));
+            int topK = Integer.parseInt(properties.getProperty("tagging_top_k", "5"));
 
             topicConfiguration = new TopicConfiguration(taggingModel, temperature, topP, topK);
             logger.info("Tagging model: " + taggingModel);

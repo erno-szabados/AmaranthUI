@@ -50,6 +50,7 @@ public class ModelClientIntegrationTest {
                 1L,
                 1L,
                 "user",
+                "topic",
                 null,
                 new Date()
         );
@@ -76,7 +77,7 @@ public class ModelClientIntegrationTest {
         // Send a chat request
         String userMessage = "What is the weather like today?";
         String systemPrompt = "You are a helpful assistant.";
-        String response = modelClient.sendChatRequest(systemPrompt, userMessage, false, false);
+        String response = modelClient.sendChatRequest(systemPrompt, userMessage, "",false, false);
 
         // Verify the response
         assertNotNull(response);

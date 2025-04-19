@@ -50,6 +50,7 @@ public class ChatChunkEmbeddingManager extends BaseEmbeddingManager<ChatChunkEmb
                 chatEntry.getUserId(),
                 chatEntry.getRole(),
                 chatEntry.getReplyToChunkId(),
+                chatEntry.getTopic(),
                 configuration.getEmbeddingModel(),
                 0.0
         );
